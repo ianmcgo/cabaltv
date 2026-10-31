@@ -108,7 +108,7 @@ Anyone can open `#admin`, but without a token that can write to your repo they c
   ],
   "settings": {
     "tz": "America/Los_Angeles",
-    "guide": {"enabled": true, "number": 99, "name": "THE GRID"},
+    "guide": {"enabled": true, "number": 0, "name": "THE GRID"},
     "cards": ["avgn", "cabal", "grid"],
     "social": {"url": "", "chat": true}
   }
@@ -139,7 +139,7 @@ Each video is `[youtubeId, title, durationSeconds]`. Data load order on the TV: 
 
 Internally, `locate()` checks block instances for the current and previous station day, using `Intl.DateTimeFormat` to turn station-time clock times into UTC, so changes to and from daylight saving time are handled. Otherwise it falls back to the main loop and trims the current item to the next block start. Programs trimmed short end on the schedule, not when YouTube's video ends.
 
-**THE GRID (program guide channel).** A built-in channel (number 99 by default; set the name, number or off switch in the Station panel). It shows a full-screen 90-minute guide, starting at the current half hour, for every channel. The current programs are highlighted and a yellow line marks the time. A spotlight box rotates through what's on now with a thumbnail every 7 seconds, and the list scrolls when there are more channels than fit. A quiet synth pad and arpeggio, generated in the browser, plays on this channel.
+**THE GRID (program guide channel).** A built-in channel, number 000 by default so it sits at the top of the lineup (shown as `000`; type 0 to tune it). Set the name, number or off switch in the Station panel. It shows a full-screen 90-minute guide, starting at the current half hour, for every channel. The current programs are highlighted and a yellow line marks the time. A spotlight box rotates through what's on now with a thumbnail every 7 seconds, and the list scrolls when there are more channels than fit. A quiet synth pad and arpeggio, generated in the browser, plays on this channel.
 
 ## Any screen (phase 10)
 
