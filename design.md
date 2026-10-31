@@ -1,4 +1,4 @@
-# CYBER//CABLE — design notes
+# Cabal Coffers TV — design notes
 
 A cable-TV style site in one `index.html`. Each channel is a looping lineup of YouTube videos that plays "live": everyone tuning in sees the same program at the same moment. Viewers can pause, rewind or skip ahead a minute, restart the current program, and jump back to live. One admin (you) edits channels from a built-in console and publishes them to a `channels.json` file in your GitHub repo.
 
@@ -222,4 +222,6 @@ The style is cyberpunk: Orbitron for display text and Share Tech Mono for everyt
 - Autoplay with sound needs one click, hence the **Jack in** screen.
 
 
-The browser tab title is "Cabal Coffers TV". The on-screen logo, share text, share pages and home-screen app name still use CYBER//CABLE.
+The site is branded Cabal Coffers TV everywhere: browser tab, on-screen logo, share text, share pages and cards, home-screen app name and the social hub. It was called CYBER//CABLE before build 30.
+
+CH 07 Internet Cartoons (slug `internet`): 158 MeatCanyon cartoons from the "meatcanyon Animation videos in order" playlist, about 9.6 h, played in release order. The Day Drinkin promo and the Monster Lab Kickstarter announcement are left out.

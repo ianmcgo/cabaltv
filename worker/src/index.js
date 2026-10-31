@@ -13,7 +13,7 @@ export default {
       if (allowed.length && !allowed.includes(origin)) return new Response('Origin not allowed', { status: 403 });
       return env.HUB.get(env.HUB.idFromName('hub')).fetch(req);
     }
-    return new Response('CYBER//CABLE social hub', { headers: { 'content-type': 'text/plain' } });
+    return new Response('Cabal Coffers TV social hub', { headers: { 'content-type': 'text/plain' } });
   }
 };
 
