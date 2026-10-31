@@ -406,7 +406,7 @@ const chNum=c=>+c.number===0?'000':String(c.number).padStart(2,'0');
 const uid=()=>'ch-'+Math.random().toString(36).slice(2,9);
 const slugify=s=>String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'channel';
 const ORIGIN=location.protocol.startsWith('http')?location.origin:undefined;
-const BUILD=14;
+const BUILD=15;
 const VER={dataRev:null,snoozeUntil:0,lastCheck:0,offered:0};
 
 const normVids=L=>(L||[]).filter(v=>Array.isArray(v)&&v[0]&&+v[2]>0).map(v=>[String(v[0]),String(v[1]||v[0]),Math.round(+v[2])]);
@@ -453,9 +453,9 @@ return l;
 function nextProg(ch,l){let n=nextOf(ch,l),g=0;while(n&&n.promo&&g++<30)n=nextOf(ch,n);return n}
 const nextOf=(ch,l)=>locate(ch,l.start+l.dur+.001);
 const epochMs=ch=>Date.parse(ch.epoch);
-const liveAbs=ch=>(Date.now()-epochMs(ch))/1000;
+const liveAbs=ch=>(Date.now()-epochMs(ch))/1000+((typeof V!=='undefined'&&V.skew&&V.skew[ch.slug])||0);
 
-const V={data:null,src:'seed',chs:[],ci:0,player:null,ready:false,powered:false,loc:null,live:true,paused:false,loadedAt:0,lost:null,lostUntil:0,pendingSlug:null,guideAt:0,muted:false};
+const V={skew:{},lastSkip:'',data:null,src:'seed',chs:[],ci:0,player:null,ready:false,powered:false,loc:null,live:true,paused:false,loadedAt:0,lost:null,lostUntil:0,pendingSlug:null,guideAt:0,muted:false};
 const cur=()=>V.chs[V.ci];
 
 async function loadData(){
@@ -500,11 +500,11 @@ function tuneSlug(slug){let i=V.chs.findIndex(c=>c.slug===slug);if(i<0)i=V.chs.f
 function noSignal(){$('#lost').classList.remove('hidden');$('#lostMsg').textContent='No channels are on the air yet. Open the sysop console at #admin to create one.';$('#lost h2').textContent='NO SIGNAL';$('#lost h2').dataset.t='NO SIGNAL'}
 function clearLost(){clearTimeout(V.lost);V.lost=null;V.lostUntil=0;$('#lost').classList.add('hidden')}
 function lostSignal(code){
-const c=cur();if(!c||!V.loc)return;staticOff(true);
-$('#lost h2').textContent='SIGNAL LOST';$('#lost h2').dataset.t='SIGNAL LOST';$('#lost').classList.remove('hidden');
-const why=code===101||code===150?'This program cannot be broadcast outside YouTube.':'This program is unavailable.';
-if(V.live){const endAbs=V.loc.start+V.loc.dur;V.lostUntil=endAbs;const wait=Math.max(1,(endAbs-liveAbs(c)))*1000;$('#lostMsg').textContent=why+' Next program in '+fmt(wait/1000)+'.';clearTimeout(V.lost);V.lost=setTimeout(()=>{clearLost();tune(V.ci,{quiet:true})},wait+400)}
-else{$('#lostMsg').textContent=why+' Skipping ahead...';clearTimeout(V.lost);V.lost=setTimeout(()=>{clearLost();advance()},2500)}
+const c=cur();if(!c||!V.loc)return;clearLost();
+const bad=V.loc;if(V.lastSkip===bad.start+'|'+bad.v[0])return;V.lastSkip=bad.start+'|'+bad.v[0];
+toast('// SKIPPING UNAVAILABLE VIDEO');
+if(V.live){const rem=Math.max(0,bad.start+bad.dur-liveAbs(c));V.skew[c.slug]=(V.skew[c.slug]||0)+rem+.05;const l=locate(c,liveAbs(c));playAt(l);renderGuide(true)}
+else{const n=nextOf(c,bad);n.off=0;playAt(n)}
 }
 function curAbs(){if(!V.loc)return 0;let t=V.loc.off;try{if(V.ready&&Date.now()-V.loadedAt>1500){const x=V.player.getCurrentTime();if(x>0)t=x}}catch(e){}return V.loc.start+t}
 function advance(){

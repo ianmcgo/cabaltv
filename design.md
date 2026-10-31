@@ -35,7 +35,7 @@ then walks the lineup to find the video that `position` falls in and the offset 
 - **Absolute timeline.** Positions are kept as seconds since the epoch (not wrapped), so rewinding across a video boundary, or across the loop's start, just finds the earlier program.
 - **Drift correction.** While live, every half second the player's position is compared to the schedule. If it is more than 4 s off (buffering, an ad, a sleeping tab), it re-seeks, or loads the right video if the schedule has moved on.
 - **Shuffle.** Optional per channel. The order is shuffled per loop with a seeded random generator (seed = channel id + loop number), so it is still identical for every viewer.
-- **Broken videos.** If YouTube refuses a video (removed, private, or embedding disabled), the screen shows SIGNAL LOST with a countdown to the next program, like dead air, then tunes back in.
+- **Broken videos.** If YouTube refuses a video (removed, private, or embedding disabled), the TV skips straight to the next program with a brief "SKIPPING UNAVAILABLE VIDEO" note. In live mode it remembers how much of the broken slot was left, a per-channel skew in this browser, so the following programs keep playing in order; the viewer runs that many seconds ahead of the shared schedule until the page reloads. Use **Re-check all** in the admin console to remove dead videos for good.
 
 ## Time-shift controls
 
