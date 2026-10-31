@@ -407,7 +407,7 @@ const chNum=c=>+c.number===0?'000':String(c.number).padStart(2,'0');
 const uid=()=>'ch-'+Math.random().toString(36).slice(2,9);
 const slugify=s=>String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'channel';
 const ORIGIN=location.protocol.startsWith('http')?location.origin:undefined;
-const BUILD=37;
+const BUILD=38;
 const VER={dataRev:null,snoozeUntil:0,lastCheck:0,offered:0};
 
 const normVids=L=>(L||[]).filter(v=>Array.isArray(v)&&v[0]&&+v[2]>0).map(v=>[String(v[0]),String(v[1]||v[0]),Math.round(+v[2])]);
@@ -454,9 +454,9 @@ return l;
 function nextProg(ch,l){let n=nextOf(ch,l),g=0;while(n&&n.promo&&g++<30)n=nextOf(ch,n);return n}
 const nextOf=(ch,l)=>locate(ch,l.start+l.dur+.001);
 const epochMs=ch=>Date.parse(ch.epoch);
-const liveAbs=ch=>(Date.now()-epochMs(ch))/1000+((typeof V!=='undefined'&&V.skew&&V.skew[ch.slug])||0);
+const liveAbs=ch=>(Date.now()-epochMs(ch))/1000+((typeof V!=='undefined'&&V.skew&&V.skew[ch.slug])||0)-((typeof V!=='undefined'&&V.hold&&V.hold[ch.slug])||0);
 
-const V={skew:{},lastSkip:'',data:null,src:'seed',chs:[],ci:0,player:null,ready:false,powered:false,loc:null,live:true,paused:false,loadedAt:0,lost:null,lostUntil:0,pendingSlug:null,guideAt:0,muted:false};
+const V={skew:{},hold:{},hc:null,lastSkip:'',data:null,src:'seed',chs:[],ci:0,player:null,ready:false,powered:false,loc:null,live:true,paused:false,loadedAt:0,lost:null,lostUntil:0,pendingSlug:null,guideAt:0,muted:false};
 const cur=()=>V.chs[V.ci];
 
 async function loadData(){
@@ -491,7 +491,7 @@ renderNow();
 }
 function tune(i,opts){
 opts=opts||{};if(!V.chs.length)return noSignal();
-V.ci=((i%V.chs.length)+V.chs.length)%V.chs.length;const c=cur();
+V.ci=((i%V.chs.length)+V.chs.length)%V.chs.length;const c=cur();if(c&&V.hold)V.hold[c.slug]=0;V.hc=null;
 LS.set(K.last,c.slug);if(location.hash.slice(1)!==c.slug)history.replaceState(null,'','#'+c.slug);socialJoin();
 setTheme();V.live=true;V.tunedAt=Date.now();if(!opts.quiet)staticOn(500);
 if(c.type==='grid'){V.loc=null;clearLost();try{V.player.stopVideo()}catch(e){}showGrid();staticOff();osd(!opts.quiet);renderGuide(true);renderNow();return}
@@ -544,6 +544,15 @@ $('#playBtn').innerHTML=V.paused?'&#9654; Play':'&#10073;&#10073; Pause';
 $('#paused').classList.toggle('hidden',!V.paused);
 $('#fwdBtn').disabled=V.live;
 }
+function holdTick(c,st){const now=Date.now();let ct=-1,vid='',du=0;try{ct=V.player.getCurrentTime();du=V.player.getDuration();const d=V.player.getVideoData();vid=d&&d.video_id||''}catch(e){}
+const full=V.loc&&V.loc.v[2]||0;V.inAd=!!(V.loc&&((vid&&vid!==V.loc.v[0])||(full>60&&du>0&&Math.abs(du-full)>5)));
+const h=V.hc;V.hc={t:now,ct,vid:V.loc&&V.loc.v[0],st};
+if(!h||!V.loc||!V.live||V.paused||V.lost||h.vid!==V.loc.v[0]||now-V.loadedAt<1500)return;
+const dt=(now-h.t)/1000;if(dt<=0||dt>3)return;
+const adv=ct>=0&&h.ct>=0?ct-h.ct:0;
+const stalled=V.inAd||(st!==2&&st!==0&&adv<dt*.5&&adv>-1);
+if(V.inAd){V.hold[c.slug]=(V.hold[c.slug]||0)+dt;return}
+if(stalled)V.hold[c.slug]=(V.hold[c.slug]||0)+(dt-Math.max(0,adv))}
 function tick(){
 $('#clock').textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
 const c=cur();if(!V.powered||!c)return;
@@ -551,9 +560,10 @@ if(c.type==='grid'){gridTick();return}
 if(!V.loc)return;
 if(V.lostUntil){$('#lostMsg').textContent=$('#lostMsg').textContent.replace(/Next program in [\d:]+/,'Next program in '+fmt(V.lostUntil-liveAbs(c)))}
 let st=-1;try{st=V.player.getPlayerState()}catch(e){}
-if(V.live&&!V.lost&&st===1&&Date.now()-V.loadedAt>5000){const la=liveAbs(c),drift=la-curAbs();if(Math.abs(drift)>4){const l=locate(c,la);if(l.start===V.loc.start&&l.v[0]===V.loc.v[0]){V.player.seekTo(l.off,true);V.loadedAt=Date.now()}else playAt(l)}}
+holdTick(c,st);
+if(V.live&&!V.lost&&!V.inAd&&st===1&&Date.now()-V.loadedAt>5000){const la=liveAbs(c),drift=la-curAbs();if(Math.abs(drift)>4){const l=locate(c,la);if(l.start===V.loc.start&&l.v[0]===V.loc.v[0]){V.player.seekTo(l.off,true);V.loadedAt=Date.now()}else playAt(l)}}
 if(!V.live&&!V.paused&&st===1&&liveAbs(c)-curAbs()<1.5)V.live=true;
-if(st===1&&V.loc.dur<V.loc.v[2]-.5&&Date.now()-V.loadedAt>2000&&curAbs()>=V.loc.start+V.loc.dur-.3){advance();return}
+if(st===1&&!V.inAd&&V.loc.dur<V.loc.v[2]-.5&&Date.now()-V.loadedAt>2000&&curAbs()>=V.loc.start+V.loc.dur-.3){advance();return}
 if(st===1&&!V.loc.promo&&V.loc.dur>120&&V.lowerFor!==V.loc.start){const rem=V.loc.start+V.loc.dur-curAbs();if(rem<=20&&rem>3){V.lowerFor=V.loc.start;const n=nextProg(c,V.loc);if(n){$('#lowerTxt').textContent=n.v[1];$('#lower').classList.add('on');setTimeout(()=>$('#lower').classList.remove('on'),9000)}}}
 renderNow();
 if($('#guide').classList.contains('open')&&Date.now()-V.guideAt>5000)renderGuide();
