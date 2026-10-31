@@ -90,6 +90,7 @@ Anyone can open `#admin`, but without a token that can write to your repo they c
       "id": "ch-avgn",
       "number": 1,
       "slug": "avgn",
+      "aliases": [],
       "name": "NERD//NET",
       "tagline": "…",
       "color": "#39ff88",
@@ -108,7 +109,7 @@ Anyone can open `#admin`, but without a token that can write to your repo they c
   "settings": {
     "tz": "America/Los_Angeles",
     "guide": {"enabled": true, "number": 99, "name": "THE GRID"},
-    "cards": ["avgn", "cards", "retro", "grid"],
+    "cards": ["avgn", "cabal", "grid"],
     "social": {"url": "", "chat": true}
   }
 }
