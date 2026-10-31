@@ -220,3 +220,6 @@ The style is cyberpunk: Orbitron for display text and Share Tech Mono for everyt
 - Durations are captured when a video is added. If an uploader later swaps a video, the schedule uses the old length until you re-add it.
 - Viewers' clocks set the schedule; a computer clock that is minutes off will show a different point in the loop.
 - Autoplay with sound needs one click, hence the **Jack in** screen.
+
+
+The browser tab title is "Cabal Coffers TV". The on-screen logo, share text, share pages and home-screen app name still use CYBER//CABLE.
