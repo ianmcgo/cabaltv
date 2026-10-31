@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CYBER//CABLE</title>
+<meta name="theme-color" content="#05010d">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#05010d;--bg2:#0b0420;--panel:rgba(12,6,34,.78);--line:rgba(0,240,255,.35);--cyan:#00f0ff;--mag:#ff2bd6;--yel:#f5ff3b;--red:#ff3b5c;--txt:#d9e7ff;--dim:#8a82b8;--ch:#00f0ff;--mono:'Share Tech Mono',ui-monospace,monospace;--disp:'Orbitron',system-ui,sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--txt);font-family:var(--mono);font-size:15px;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;z-index:-2;background:radial-gradient(ellipse at 50% -10%,rgba(255,43,214,.22),transparent 55%),radial-gradient(ellipse at 100% 100%,rgba(0,240,255,.14),transparent 50%),var(--bg)}
+body::after{content:"";position:fixed;left:-50%;right:-50%;bottom:0;height:45vh;z-index:-1;background-image:linear-gradient(rgba(255,43,214,.35) 1px,transparent 1px),linear-gradient(90deg,rgba(255,43,214,.35) 1px,transparent 1px);background-size:60px 60px;transform:perspective(400px) rotateX(62deg);transform-origin:bottom;mask-image:linear-gradient(to top,rgba(0,0,0,.7),transparent);animation:grid 4s linear infinite;pointer-events:none}
+@keyframes grid{to{background-position:0 60px}}
+button,input,textarea,select{font:inherit;color:inherit}
+a{color:var(--cyan)}
+.hidden{display:none!important}
+.btn{background:rgba(0,240,255,.06);border:1px solid var(--line);color:var(--cyan);padding:.55em .9em;cursor:pointer;text-transform:uppercase;letter-spacing:.08em;font-size:.82rem;clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);transition:background .15s,color .15s,box-shadow .15s;white-space:nowrap}
+.btn:hover{background:rgba(0,240,255,.18);box-shadow:0 0 14px rgba(0,240,255,.35)}
+.btn:active{transform:translateY(1px)}
+.btn.mag{color:var(--mag);border-color:rgba(255,43,214,.5);background:rgba(255,43,214,.07)}
+.btn.mag:hover{background:rgba(255,43,214,.2);box-shadow:0 0 14px rgba(255,43,214,.4)}
+.btn.warn{color:var(--red);border-color:rgba(255,59,92,.5)}
+.btn:disabled{opacity:.35;cursor:default;box-shadow:none}
+.glow{text-shadow:0 0 6px currentColor,0 0 18px currentColor}
+.logo{font-family:var(--disp);font-weight:900;letter-spacing:.12em;color:var(--cyan);position:relative;white-space:nowrap}
+.logo b{color:var(--mag)}
+.glitch{position:relative;display:inline-block}
+.glitch::before,.glitch::after{content:attr(data-t);position:absolute;inset:0;overflow:hidden}
+.glitch::before{color:var(--mag);transform:translate(2px,0);clip-path:inset(0 0 60% 0);animation:gl 3.2s infinite steps(1)}
+.glitch::after{color:var(--cyan);transform:translate(-2px,0);clip-path:inset(55% 0 0 0);animation:gl 2.7s infinite steps(1) reverse}
+@keyframes gl{0%,86%,100%{transform:translate(0)}88%{transform:translate(3px,-1px)}91%{transform:translate(-3px,1px)}94%{transform:translate(2px,2px)}}
+#app{max-width:1280px;margin:0 auto;padding:12px 16px 24px;display:flex;flex-direction:column;gap:12px;min-height:100vh}
+.topbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.topbar .logo{font-size:1.25rem}
+.topbar .spacer{flex:1}
+.pill{border:1px solid var(--line);padding:.3em .7em;font-size:.8rem;letter-spacing:.1em;color:var(--dim)}
+#clock{color:var(--yel)}
+#srcPill.draft{color:var(--yel);border-color:var(--yel)}
+#tv{position:relative;background:#000;border:1px solid var(--line);box-shadow:0 0 0 1px rgba(255,43,214,.25),0 0 40px rgba(0,240,255,.15),inset 0 0 60px rgba(0,0,0,.9)}
+#tv:fullscreen{border:0;display:flex;align-items:center;justify-content:center}
+.screen{position:relative;aspect-ratio:16/9;width:100%;overflow:hidden;background:#000}
+#tv:fullscreen .screen{width:min(100vw,177.78vh);height:auto}
+#yt,#yt iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.shield{position:absolute;inset:0;z-index:2;cursor:pointer}
+.scan{position:absolute;inset:0;z-index:3;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px);mix-blend-mode:multiply}
+.vignette{position:absolute;inset:0;z-index:3;pointer-events:none;box-shadow:inset 0 0 120px rgba(0,0,0,.75);background:radial-gradient(ellipse at center,transparent 60%,rgba(0,0,0,.35))}
+.corner{position:absolute;width:26px;height:26px;z-index:4;pointer-events:none;border-color:var(--ch);border-style:solid;opacity:.85;filter:drop-shadow(0 0 4px var(--ch))}
+.c1{top:10px;left:10px;border-width:2px 0 0 2px}.c2{top:10px;right:10px;border-width:2px 2px 0 0}.c3{bottom:10px;left:10px;border-width:0 0 2px 2px}.c4{bottom:10px;right:10px;border-width:0 2px 2px 0}
+#static{position:absolute;inset:0;width:100%;height:100%;z-index:5;image-rendering:pixelated;opacity:0;transition:opacity .25s;pointer-events:none}
+#static.on{opacity:1;transition:none}
+#bug{position:absolute;top:18px;right:22px;z-index:6;font-family:var(--disp);font-weight:700;font-size:.85rem;color:var(--ch);opacity:.75;letter-spacing:.12em;pointer-events:none;text-shadow:0 0 8px var(--ch)}
+#osd{position:absolute;left:28px;top:24px;z-index:6;pointer-events:none;opacity:0;transition:opacity .5s}
+#osd.on{opacity:1;transition:none}
+#osd .num{font-family:var(--disp);font-weight:900;font-size:clamp(2.2rem,7vw,4.6rem);color:var(--ch);line-height:1;text-shadow:0 0 12px var(--ch),0 0 30px var(--ch)}
+#osd .name{font-family:var(--disp);font-weight:700;font-size:clamp(1rem,2.6vw,1.6rem);letter-spacing:.14em;margin-top:6px}
+#osd .tag{color:var(--dim);margin-top:4px;max-width:60ch;font-size:.9rem}
+#osd .prog{margin-top:10px;background:rgba(0,0,0,.55);padding:6px 10px;border-left:3px solid var(--ch);max-width:56ch}
+#lost{position:absolute;inset:0;z-index:7;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(5,1,13,.75);text-align:center;padding:16px}
+#lost h2{font-family:var(--disp);color:var(--red);letter-spacing:.2em;margin:0;font-size:clamp(1.2rem,4vw,2.2rem)}
+#lost p{margin:0;color:var(--dim)}
+#paused{position:absolute;right:22px;bottom:20px;z-index:6;font-family:var(--disp);font-size:.9rem;letter-spacing:.2em;color:var(--yel);text-shadow:0 0 8px var(--yel);pointer-events:none;animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:.2}}
+.nowbar{display:grid;grid-template-columns:1fr auto;gap:6px 16px;align-items:center;background:var(--panel);border:1px solid var(--line);padding:12px 14px;backdrop-filter:blur(6px)}
+.nowbar .label{font-size:.72rem;color:var(--dim);letter-spacing:.2em}
+#nowTitle{font-family:var(--disp);font-weight:700;font-size:clamp(.95rem,2.2vw,1.2rem);letter-spacing:.04em;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#nextTitle{color:var(--dim);font-size:.88rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#nextTitle b{color:var(--cyan);font-weight:400}
+.bar{grid-column:1/-1;height:6px;background:rgba(255,255,255,.07);position:relative;overflow:hidden}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--mag),var(--ch));box-shadow:0 0 10px var(--ch)}
+.bar u{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--yel);box-shadow:0 0 6px var(--yel);text-decoration:none}
+.times{grid-column:1/-1;display:flex;justify-content:space-between;font-size:.8rem;color:var(--dim)}
+#livePill{font-family:var(--disp);font-size:.78rem;letter-spacing:.18em;padding:.35em .8em;border:1px solid var(--red);color:var(--red);text-align:center;min-width:9.5em}
+#livePill.live{background:rgba(255,59,92,.15);text-shadow:0 0 8px var(--red)}
+#livePill.live::before{content:"\25CF ";animation:blink 1.2s steps(2) infinite}
+#livePill.behind{border-color:var(--yel);color:var(--yel)}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.controls .grp{display:flex;gap:6px;flex-wrap:wrap}
+.controls .sep{width:1px;align-self:stretch;background:var(--line);margin:0 4px}
+#goLive.pulse{color:#fff;border-color:var(--red);background:rgba(255,59,92,.25);animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 18px rgba(255,59,92,.8)}}
+.vol{display:flex;align-items:center;gap:6px;margin-left:auto}
+input[type=range]{accent-color:var(--mag);width:110px}
+.keys{font-size:.75rem;color:var(--dim);line-height:1.7}
+.keys kbd{border:1px solid var(--line);padding:0 .35em;color:var(--cyan);font-family:var(--mono)}
+#guide{position:fixed;top:0;right:0;bottom:0;width:min(460px,100%);z-index:40;background:rgba(7,3,22,.95);border-left:1px solid var(--line);box-shadow:-20px 0 60px rgba(0,0,0,.6);transform:translateX(105%);transition:transform .25s ease;display:flex;flex-direction:column}
+#guide.open{transform:none}
+#guide header{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+#guide header h2{font-family:var(--disp);font-size:1rem;letter-spacing:.2em;margin:0;flex:1;color:var(--mag)}
+#guideBody{overflow:auto;padding:12px 16px 30px;display:flex;flex-direction:column;gap:12px}
+.gch{border:1px solid rgba(255,255,255,.08);padding:10px 12px;cursor:pointer;background:rgba(255,255,255,.02);border-left:3px solid var(--c)}
+.gch:hover,.gch.cur{background:rgba(0,240,255,.07);border-color:var(--line);border-left-color:var(--c)}
+.gch .h{display:flex;gap:10px;align-items:baseline}
+.gch .n{font-family:var(--disp);font-weight:900;color:var(--c);font-size:1.2rem;text-shadow:0 0 8px var(--c)}
+.gch .nm{font-family:var(--disp);font-weight:700;letter-spacing:.1em}
+.gch .now{margin-top:6px;color:#fff;font-size:.9rem}
+.gch .bar{height:3px;margin-top:6px}
+.gch ol{list-style:none;margin:8px 0 0;padding:0;font-size:.82rem;color:var(--dim)}
+.gch ol li{display:flex;gap:10px}
+.gch ol li span{color:var(--cyan);min-width:4.8em}
+#power{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;background:rgba(5,1,13,.92);text-align:center;padding:16px}
+#power .logo{font-size:clamp(2rem,8vw,4.5rem)}
+#power p{color:var(--dim);margin:0;letter-spacing:.12em}
+#power .btn{font-size:1.1rem;padding:.9em 2.2em}
+footer{margin-top:auto;padding-top:18px;font-size:.8rem;color:var(--dim);display:flex;gap:14px;flex-wrap:wrap;justify-content:center;border-top:1px solid rgba(0,240,255,.12)}
+footer a{color:var(--dim)}footer a:hover{color:var(--cyan)}
+#admin{max-width:1280px;margin:0 auto;padding:14px 16px 40px;display:flex;flex-direction:column;gap:14px;min-height:100vh}
+.panel{background:var(--panel);border:1px solid var(--line);padding:14px;backdrop-filter:blur(6px)}
+.panel h3{font-family:var(--disp);font-size:.85rem;letter-spacing:.2em;color:var(--mag);margin:0 0 12px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.fld{display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px}
+.fld label{font-size:.72rem;color:var(--dim);letter-spacing:.15em}
+.fld input,.fld textarea,.fld select{background:rgba(0,0,0,.45);border:1px solid rgba(0,240,255,.25);padding:.55em .65em;outline:none;color:#fff;width:100%}
+.fld input:focus,.fld textarea:focus{border-color:var(--cyan);box-shadow:0 0 0 1px var(--cyan),0 0 12px rgba(0,240,255,.25)}
+.fld input[type=color]{padding:2px;height:2.45em}
+.chk{display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--dim);padding-bottom:.55em}
+.chk input{accent-color:var(--mag);width:18px;height:18px}
+#status{font-size:.85rem;color:var(--dim);min-height:1.3em}
+#status.ok{color:#39ff88}#status.err{color:var(--red)}#status.busy{color:var(--yel)}
+.adm-grid{display:grid;grid-template-columns:260px 1fr;gap:14px;align-items:start}
+#chList{display:flex;flex-direction:column;gap:6px}
+.chItem{display:flex;gap:10px;align-items:center;padding:8px 10px;border:1px solid rgba(255,255,255,.08);cursor:pointer;border-left:3px solid var(--c)}
+.chItem.sel{background:rgba(0,240,255,.1);border-color:var(--line);border-left-color:var(--c)}
+.chItem .n{font-family:var(--disp);font-weight:900;color:var(--c);min-width:2ch}
+.chItem .meta{font-size:.75rem;color:var(--dim)}
+.chItem .off{color:var(--yel);font-size:.7rem}
+#vids{display:flex;flex-direction:column;gap:4px;max-height:60vh;overflow:auto;margin-top:10px;padding-right:4px}
+.vrow{display:grid;grid-template-columns:2.6em 64px 1fr auto auto;gap:10px;align-items:center;padding:4px 6px;border:1px solid rgba(255,255,255,.06);background:rgba(0,0,0,.25)}
+.vrow.drag{opacity:.4}.vrow.over{border-color:var(--mag)}
+.vrow img{width:64px;height:36px;object-fit:cover;display:block}
+.vrow .i{color:var(--dim);text-align:right;cursor:grab}
+.vrow .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.88rem}
+.vrow .t a{color:inherit;text-decoration:none}
+.vrow .d{color:var(--cyan);font-size:.82rem}
+.vrow .a{display:flex;gap:4px}
+.vrow .a button{background:none;border:1px solid rgba(255,255,255,.12);color:var(--dim);cursor:pointer;width:1.9em;height:1.9em;padding:0}
+.vrow .a button:hover{color:var(--cyan);border-color:var(--cyan)}
+#addLog{font-size:.8rem;color:var(--dim);white-space:pre-wrap;max-height:9em;overflow:auto}
+.note{font-size:.8rem;color:var(--dim);line-height:1.5}
+#probeBox{position:fixed;right:0;bottom:0;width:200px;height:113px;opacity:.01;pointer-events:none;z-index:-1}
+@media (max-width:820px){.adm-grid{grid-template-columns:1fr}.vrow{grid-template-columns:2.2em 1fr auto auto}.vrow img{display:none}.vol{margin-left:0}.controls .sep{display:none}.keys{display:none}}
+@media (max-width:520px){#osd{left:14px;top:12px}#osd .tag,#osd .prog,#bug{display:none}.btn{padding:.5em .65em;font-size:.75rem}.nowbar{grid-template-columns:1fr}#livePill{justify-self:start}}
+</style>
+</head>
+<body>
+<div id="power">
+<div class="logo glow"><span class="glitch" data-t="CYBER//CABLE">CYBER<b>//</b>CABLE</span></div>
+<p id="powerInfo">ESTABLISHING UPLINK...</p>
+<button class="btn mag" id="jackIn">&#9889; Jack in</button>
+<p style="font-size:.75rem">sound on &middot; live signal &middot; no rewinding the future</p>
+</div>
+
+<div id="app">
+<div class="topbar">
+<div class="logo glow"><span class="glitch" data-t="CYBER//CABLE">CYBER<b>//</b>CABLE</span></div>
+<span class="pill" id="srcPill">SIGNAL</span>
+<span class="spacer"></span>
+<span class="pill" id="clock">--:--:--</span>
+<button class="btn" id="guideBtn">&#9776; Guide</button>
+</div>
+
+<div id="tv">
+<div class="screen">
+<div id="yt"></div>
+<div class="shield" id="shield"></div>
+<div class="scan"></div><div class="vignette"></div>
+<span class="corner c1"></span><span class="corner c2"></span><span class="corner c3"></span><span class="corner c4"></span>
+<div id="bug"></div>
+<div id="osd"><div class="num" id="osdNum"></div><div class="name" id="osdName"></div><div class="tag" id="osdTag"></div><div class="prog" id="osdProg"></div></div>
+<div id="paused" class="hidden">&#10073;&#10073; PAUSED</div>
+<div id="lost" class="hidden"><h2 class="glitch" data-t="SIGNAL LOST">SIGNAL LOST</h2><p id="lostMsg"></p></div>
+<canvas id="static" width="192" height="108"></canvas>
+</div>
+</div>
+
+<div class="nowbar">
+<div>
+<div class="label">NOW TRANSMITTING</div>
+<div id="nowTitle">&mdash;</div>
+</div>
+<div id="livePill" class="live">LIVE</div>
+<div class="bar"><i id="barFill" style="width:0"></i><u id="barLive" style="left:0"></u></div>
+<div class="times"><span id="tPos">0:00</span><span id="nextTitle"></span><span id="tDur">0:00</span></div>
+</div>
+
+<div class="controls">
+<div class="grp">
+<button class="btn" id="chDown" title="Channel down (&darr;)">CH &#9660;</button>
+<button class="btn" id="chUp" title="Channel up (&uarr;)">CH &#9650;</button>
+</div>
+<span class="sep"></span>
+<div class="grp">
+<button class="btn" id="restartBtn" title="Restart program (R)">&#9198; Restart</button>
+<button class="btn" id="backBtn" title="Back 1 minute (&larr;)">&#9194; 1:00</button>
+<button class="btn mag" id="playBtn" title="Pause / play (Space)">&#10073;&#10073; Pause</button>
+<button class="btn" id="fwdBtn" title="Forward 1 minute (&rarr;)">1:00 &#9193;</button>
+<button class="btn" id="goLive" title="Catch up to live (L)">&#9679; Go live</button>
+</div>
+<div class="vol">
+<button class="btn" id="muteBtn" title="Mute (M)">&#128266;</button>
+<input type="range" id="volume" min="0" max="100" value="80" aria-label="Volume">
+<button class="btn" id="fsBtn" title="Fullscreen (F)">&#9974;</button>
+</div>
+</div>
+<div class="keys"><kbd>&uarr;</kbd><kbd>&darr;</kbd> channel &nbsp; <kbd>0-9</kbd> jump &nbsp; <kbd>Space</kbd> pause &nbsp; <kbd>&larr;</kbd><kbd>&rarr;</kbd> &plusmn;1 min &nbsp; <kbd>R</kbd> restart &nbsp; <kbd>L</kbd> live &nbsp; <kbd>G</kbd> guide &nbsp; <kbd>M</kbd> mute &nbsp; <kbd>F</kbd> fullscreen</div>
+
+<footer>
+<span>Created by Ian McGonigal</span>
+<a href="https://ianmcgo.github.io/website/" target="_blank" rel="noopener">Website</a>
+<a href="https://www.patreon.com/cw/ianmcg" target="_blank" rel="noopener">Patreon</a>
+<span>Programs play from YouTube</span>
+</footer>
+</div>
+
+<aside id="guide" aria-label="Channel guide">
+<header><h2>// CHANNEL GUIDE</h2><button class="btn" id="guideClose">&#10005;</button></header>
+<div id="guideBody"></div>
+</aside>
+
+<div id="admin" class="hidden">
+<div class="topbar">
+<div class="logo glow"><span class="glitch" data-t="CYBER//CABLE">CYBER<b>//</b>CABLE</span></div>
+<span class="pill" style="color:var(--mag);border-color:var(--mag)">SYSOP CONSOLE</span>
+<span class="spacer"></span>
+<a class="btn" href="#">&#8617; Back to TV</a>
+</div>
+
+<div class="panel">
+<h3>// UPLINK &mdash; GITHUB</h3>
+<div class="row">
+<div class="fld"><label>REPO (OWNER/NAME)</label><input id="ghRepo" placeholder="ianmcgo/cybercable"></div>
+<div class="fld" style="max-width:150px"><label>BRANCH</label><input id="ghBranch" placeholder="main"></div>
+<div class="fld" style="max-width:200px"><label>FILE</label><input id="ghPath" placeholder="channels.json"></div>
+<div class="fld"><label>ACCESS TOKEN</label><input id="ghToken" type="password" placeholder="github_pat_..." autocomplete="off"></div>
+<button class="btn" id="ghConnect">Sign in</button>
+<button class="btn warn hidden" id="ghOut">Sign out</button>
+</div>
+<p class="note">Only someone holding a GitHub token with write access to this repo can publish changes. The token stays in this browser only.</p>
+</div>
+
+<div class="panel">
+<div class="row" style="align-items:center">
+<button class="btn mag" id="saveGh">&#8679; Publish to GitHub</button>
+<button class="btn" id="loadGh">&#8681; Load from GitHub</button>
+<button class="btn" id="dlJson">Download JSON</button>
+<label class="btn" style="display:inline-block">Import JSON<input type="file" id="upJson" accept=".json,application/json" hidden></label>
+<label class="chk"><input type="checkbox" id="previewDraft"> Preview draft on this browser's TV</label>
+<button class="btn warn" id="discard">Discard draft</button>
+</div>
+<div id="status" style="margin-top:10px"></div>
+</div>
+
+<div class="adm-grid">
+<div class="panel">
+<h3>// CHANNELS</h3>
+<div id="chList"></div>
+<button class="btn" id="newCh" style="margin-top:10px;width:100%">+ New channel</button>
+</div>
+<div class="panel" id="editor"></div>
+</div>
+</div>
+
+<div id="probeBox"><div id="probe"></div></div>
+
+<script type="application/json" id="seed">{"version":1,"channels":[{"id":"ch-avgn","number":1,"slug":"avgn","name":"NERD//NET","tagline":"The Angry Video Game Nerd. Every episode. Around the clock.","color":"#39ff88","epoch":"2026-10-31T00:00:00Z","shuffle":false,"hidden":false,"videos":[["YaXnmR68Zpc","Maniac Mansion (NES)",1048],["Mg7EkeQfsNQ","Batman: Dark Tomorrow (GameCube)",2444],["1mVmTa3KefQ","Beating Bubble Bobble (NES)",1530],["HzXZi_kuPNw","Crash Bandicoot Games with Caddicarus",1429],["KbBBQkanHTU","ToeJam & Earl with Scott the Woz (Sega Genesis)",1135],["G4I2gdXkZe8","Contra Force (NES)",1239],["B9MZ0lmZ4pg","E.T. Interplanetary Mission (PS1)",1186],["mCTEbJOnXJ4","Timecop (SNES)",1145],["vCG25-52p38","Werewolf: The Last Warrior (NES)",1383],["dhCji6TUk7M","Mario Paint",1326],["8-7nun1ZApQ","Metroid: Original Trilogy",2158],["FLeVXzgZ3so","Dragon's Lair Re-Revisited",1511],["MTWa56vfKbU","Video Game Commercials",1095],["nH325JnIMZs","Gex Trilogy",1436],["kaODgsl9XmA","Game Glitches: The Legacy Sequel",1554],["TM_OsuJduwI","Blaster Master",1218],["jdXm2eFyOTs","Nosferatu (SNES)",1181],["s9Z82kBvxVc","Deja Vu (NES)",1366],["K2lV23zqWtY","Glover (N64)",1024],["5TRV2pcVcng","SimCity (SNES)",1157],["dZbUuSmFgMo","What Is the Best Castlevania? - 20th Anniversary",1510],["SCVezodcSFI","My Horse Prince",1201],["rrlJKhutYvI","The Goonies 1 & 2",1572],["U8txDyH9ug0","Final Fantasy 6 (SNES)",2068],["_y7iz7jzmmY","Beating Jekyll and Hyde",1611],["KxthHN8GapA","A Boy and His Blob",1139],["xPsN_rcEpu4","Indiana Jones: Crystal Skull + More (PC, N64, GEN, NES)",1571],["GoMckPTBUeo","Earthworm Jim Trilogy",1617],["wPG4s1jT01U","Kid Icarus",1308],["QYlAed4EaPc","Garfield",1576],["f5zyhC11hzQ","DOOM",1749],["R-GWV2HrW0c","Hudson Hawk (NES)",1104],["Fg1oKKz7NOw","Purr Pals (Wii)",1078],["-XtToNPFU1E","Contra How I Remember It",1699],["7CixRRG64HM","The Last Ninja (NES)",1647],["a9io5dyRvmI","LJN History and Movie Games (Episode 200)",1519],["JvHtXn7uQ6I","LJN Sports and Marvel Games",1515],["Sqif27k-_Hg","LJN Wrestling and Other Games",1617],["UDumOYP0ZA0","Commodore 64",1853],["jNNR1KOufqI","Freddy & Jason (Commodore 64)",1456],["3KC_h3VkXbI","Greendog (GEN)",921],["ghAbmH7To-w","The Rocketeer (NES & SNES)",1082],["Y66vEfEiPBM","Pac-Man 2: The New Adventures (GEN)",542],["0aT4w2Q1BrU","Carmageddon 64 (N64)",653],["WF9eUXKgzCA","Sega Game Gear VHS Tapes",739],["YPoBMzAkZZM","3DO Interactive Multiplayer",1288],["3BwciKSEhv4","Corpse Killer (3DO)",942],["IMrqAEwEpNE","Fear and Loathing in Vegas Stakes",1617],["WPVwsiTdDHA","Darkman (NES)",1208],["ZJAKd4hg_m0","Shrek: Fairy Tale Freakdown (GBC)",951],["hH_2gfxCBQk","The Simpsons: Bartman Meets Radioactive Man (NES)",848],["2zYLntVHGRw","The Legend of Kage (NES)",955],["yGbkLG1b8WA","Taito Legends (PS2)",2068],["AtbhSRCR7S0","Countdown Vampires (PS1)",989],["6144EJIDj94","Ecco the Dolphin (Sega Genesis)",1005],["PnceSzQ-CpI","Mission: Impossible (N64)",963],["wm9J8o6zrSI","Bad Final Fight Games",1062],["1YQYPIV9-sY","The Incredible Crash Dummies (NES)",1147],["bTtuohRoXNY","Dennis the Menace (SNES)",1111],["WCUtXD27UyQ","Mortal Kombat 1 Ports",1323],["ldC4hw8AJ2c","Mortal Kombat Rip-Offs",1345],["fuOmmIOdPg8","Raid 2020 (NES)",1432],["VYpryVA5WQQ","The Legend of Zelda: Majora's Mask (N64)",2465],["KvGxHuEUXgs","The Immortal (NES)",800],["kY_r6u8YNEU","Spawn Games",1337],["15pi8vrUx9c","Jurassic Park: Trespasser (PC)",1462],["Vg0y9i5E7nY","Chex Quest (PC)",986],["GKp3V1PiELk","Life of Black Tiger with Gilbert Gottfried (PS4)",1402],["LBFjpE1BaXk","Superman 64 Returns!! (N64)",1150],["VdVP2XxV3QU","Pepsiman (PS1)",1397],["vnnf42BQTfo","Aladdin Deck Enhancer (NES)",1306],["PPKqp3H8xic","Video Game Magazines",899],["-LpJnN9Imbg","Kingdom Hearts Timeline - Chronologically Confused",629],["shwFNKP_mI4","Home Alone Games with Macaulay Culkin",1144],["tKqRz64eQD4","Amiga CD32",1704],["HfnNrISCFfk","The Town With No Name (CDTV)",952],["HOccLSB9EU8","Super Hydlide & Virtual Hydlide (SEGA Genesis)",1236],["n5yQk7y20oY","Resident Evil Survivor (PlayStation)",1349],["3oqktia7NLI","Tomb Raider Games",1138],["jVybGgvGMlk","Drake of the 99 Dragons (XBOX)",809],["O14og3hXook","Dirty Harry (NES)",712],["LZ5nX0FTH6Q","Earthbound (SNES)",2371],["KKjodfe0lgE","Lightspan Adventures (PS1)",938],["iA2borlKZA4","Star Wars: Masters of Teras Kasi (PS1)",528],["98Vch_OsyZI","Charlie's Angels (GameCube)",582],["H2v5SqQYTtQ","RoboCop NES Games",833],["x4hktqhBpzY","Polybius",1339],["OOwfl8yY7nc","Wrestling Games",715],["ft0aqF_Yc0A","Treasure Master (NES)",603],["EEzJH90h3aA","Game Boy Accessories",976],["zbAoITuMqg4","Planet of the Apes (Sony Playstation)",754],["Sr_rd6DpxM0","Sonic the Hedgehog 2006 (Xbox 360)",1008],["dJSpUUITpQA","Sonic 2006 Part 2 (Xbox 360)",815],["Ht5NmRtWb88","Mighty Morphin Power Rangers",1216],["A0YzkTFmq1k","Sega Activator Interactor Menacer",712],["LB3CybXl8rs","Berenstain Bears",1182],["atZ9-MxVPNM","Beavis and Butthead",859],["5oH0rzY5zOA","Paperboy (NES)",966],["Q3iEn5rzMnw","MEGA MAN Games (DOS, PS1, PS2)",1507],["zCRDLccnYFo","Mortal Kombat Mythologies: Sub-Zero (N64)",723],["yVJcaP5lAC8","The Crow (Sega Saturn)",583],["-IV8hCvsXy0","Seaman (Dreamcast)",1045],["x3cewR_sMYI","Darkwing Duck (Turbografx 16)",829],["M_aXcH1zDEE","Hong Kong 97 (Super Famicom)",767],["A5TUJae9CxM","Tagin' Dragon (NES)",231],["TCcB0iUvU_Y","ALF (Sega Master System)",242],["lzt_uoTVAcE","CrazyBus (Sega Genesis)",247],["0rGW_Vidtmg","Ren & Stimpy: Fire Dogs (SNES)",317],["8cLHh-ka7X8","Rocky and Bullwinkle (NES)",247],["_HXZgKO8w4E","Mary-Kate and Ashley \"Get a Clue\" (Game Boy Color)",256],["C2qGlSrKvJw","V.I.P. with Pam Anderson (PS1)",294],["fRqdHj1vtV8","Lethal Weapon (NES)",278],["m3Qhrs_Uh1c","Porky's (Atari 2600)",363],["-ODebhGtiHs","HyperScan",393],["UVf9-wEzGvc","Universal Studios Theme Parks Adventure (Gamecube)",690],["8-zEhhTqdvg","LJN Video Art",523],["uKFgXGO51rU","Beetlejuice (NES)",834],["WUsQmYRfynw","E.T. (Atari 2600)",421],["RFi2vcseEz8","Desert Bus (Sega CD)",930],["h6DtVHqyYts","Big Rigs: Over the Road Racing (PC)",945],["ONYyFiKjJ20","Wish List \"Part 1\"",907],["OwGDVMptn8k","Wish List \"Part 2\"",927],["WEz0IoffV9g","AVGN Games",1316],["RwlfLMs46YA","Alien 3 (NES)",617],["_u5dtBtG9yU","Tiger Electronic Games",1120],["1A5B8fXp0aU","Bill & Ted's Excellent Adventure (NES)",1072],["ZcuxGRO1wQA","Toxic Crusaders",882],["bByE7n2AJj4","Ikari Warriors (NES)",1239],["0Oem60yvtUY","Atari Sports (Atari 2600)",762],["94Y6y1MOoEo","Ghosts N' Goblins (NES)",1024],["0Ta-4H92CkA","Schwarzenegger Games (NES)",1346],["Kz0TOQ1BF-M","Bible Games 3",855],["y4-7mWeY_Cs","Dark Castle (Sega Genesis)",728],["fs2wczJXETM","Nintendo World Championships (NES)",1023],["5BqCAOGRR2Q","Kid Kool (NES)",495],["jfnSqLzUzfM","The Making of an AVGN episode",2106],["DB9GM-a7lR0","Spielberg Games",1279],["vBjejMlyxLk","R.O.B. the Robot (NES)",1136],["F2bKVEVUOPg","Star Wars Games",1349],["iSjq4Am-5Aw","Day Dreamin' Davey (NES)",841],["iMINBv_Dqvs","How the Nerd Stole Christmas",727],["w2ZX_ToJHFk","Lester the Unlikely (SNES)",645],["EjXn5qiM8Zw","Dr. Jekyll and Mr. Hyde Revisited (NES)",1001],["sDBfNTf4ORY","Zelda II: The Adventure of Link (NES)",908],["Fz92prJ3XlM","Back to the Future ReRevisited",1384],["HdWRTleizFU","Game Glitches",967],["hwmoJkHS-2E","Cheetahmen (NES)",1226],["a4QBeADNM34","Action 52 (NES)",1611],["FvT8jG1OVdI","Pong Consoles",721],["LWltQ9UN5vE","SwordQuest (Atari 2600)",553],["6t2YvyLqw3c","Ninja Gaiden (NES)",941],["nFOf70RyERU","Hydlide (NES)",509],["gU21wBNSVWU","Street Fighter 2010 (NES)",1077],["QGrHqz3opgM","Winter Games",629],["NEwgFmL31RQ","Little Red Hood (unlicensed NES)",895],["Hfo6hoN0PUw","Castlevania (Part 1)",609],["UrLdIiW6bEo","Castlevania (Part 2)",768],["4C0xI41RtaU","Castlevania (Part 3)",773],["sSoQWmcr5mc","Castlevania (Part 4)",589],["2cWGZkK-KsY","Wayne's World",736],["C8mQHotlaFo","Godzilla",947],["FJEXpsDB2XQ","Super Pitfall (NES)",668],["wai9CnvatBo","Bugs Bunny's Crazy Castle",1019],["DyaF_gCKWsI","Plumbers Don't Wear Ties (Panasonic 3DO)",1239],["69ybxGPnuag","Mario is Missing",571],["km9vYa2GIUI","Transformers",764],["24sBGjAAWEY","Terminator",895],["rmq6bCVD4V8","Terminator (Part 2)",806],["-LKK-6bmDgQ","X-Men",852],["kDAKxjG7VaI","Odyssey",659],["bHyTzPtEAhk","Metal Gear (NES)",798],["CGEGon-Qc_Q","Atari Jaguar (Part 1)",504],["3LVcvkLCUtU","Atari Jaguar (Part 2)",862],["kMz7JkVplpM","Milon's Secret Castle (NES)",694],["zk1C0AhshtU","Michael Jackson's Moonwalker (Sega Genesis)",605],["_dUVZozf-i0","Bible Games 2",1024],["tl2Wz1qlzco","Hotel Mario (CD-I Part 1)",478],["xLxqfmpjB-U","Zelda Wand of Gamelon (CD-I Part 2)",756],["eHcoOLMXono","Faces of Evil / Zelda's Adventure (CD-I Part 3)",856],["sDR8HKC9wgI","Dracula",718],["cOfHlihgOn0","Frankenstein",849],["t9nxIUhZCCw","Dick Tracy (NES)",899],["UD7k4mTThLY","Battletoads (NES)",473],["cgCSbOy4mNU","Deadly Towers (NES)",501],["JFvtk5toGJg","Batman Part 1",705],["Dvs6JDSBqoE","Batman (Part 2)",583],["1dJXgJ1c4vY","Superman 64 (N64)",637],["9NyWqiHQs7c","Superman (NES)",706],["1CNddEz9dak","Star Trek",644],["7O82pX2XQIQ","Indiana Jones Trilogy",1045],["9kBMscW_dVg","NES Accessories",831],["YWRzXAtDgN0","Super Mario Bros. 3 and The Wizard",625],["4yn52NTdV0c","Doublevision (Part 1) Intellivision",599],["rBMO8F1I-h4","Doublevision (Part 2) ColecoVision",504],["HTLUOgP21UY","The Wizard Of Oz (Super Nintendo)",685],["OyVAp0tOk5A","Virtual Boy",903],["ttd_HcgaoXQ","Rambo (NES)",781],["cHIP9UtkQDQ","The Legend of Zelda Timeline",1141],["CyqK8wqwYmc","Christmas Carol Part 1",354],["l7XIbwtMl4Y","Christmas Carol Part 2",582],["00xIvTOLrYA","Dragon's Lair (NES)",562],["a0G_8gHDsL8","Halloween (Atari 2600)",965],["bVtwVXMPBY8","Texas Chainsaw Massacre (Atari 2600)",766],["B0iwC58K6t0","Fester's Quest (NES)",565],["eegQI9WM6mk","Nintendo Power",882],["M1tU61Nyv1w","Bugs Bunny Birthday Blowout (NES)",522],["mKnl0CvfeLs","The Simpsons",797],["t475kPIEXPg","Independence Day (PS1)",369],["RL0YWB8wMDs","Die Hard",543],["gvnRBywkUZ0","Silver Surfer (NES)",677],["g2eH3vYbdGo","Sega CD",792],["VvR_3OTxs8A","Sega 32X",544],["omW1E7rv7IM","Spider-Man",632],["TLVGmvmNitg","Ghostbusters (NES)",1049],["qF2snKCmqJo","Ghostbusters Part 2",687],["kZfq-IPlLF8","Ghostbusters Part 3",792],["AknyR-kRvLc","Atari 5200",639],["KoLrymTT2co","Teenage Mutant Ninja Turtles III (Re-Edit)",1345],["LkNvQYiM6bw","Bible Games",1289],["v7poR6G3hec","Rocky (SMS)",421],["OEVzPCY2T-g","Chronologically Confused about Sequel Titles",694],["MYDuy7wM8Gk","The Power Glove (NES)",748],["1raUvGNbZFg","Friday the 13th (NES)",742],["3p713bNaO4A","A Nightmare On Elm Street (NES)",808],["kMg6_IXCjo4","Double Dragon III (NES)",250],["ofM11nPzFo0","Top Gun (NES)",455],["sayp5lieKuU","Master Chu and the Drunkard Hu",260],["QVS0Uks4ZUw","Wally Bear and the No! Gang",228],["qVBerX6Dzmc","McKids",429],["y306cWw98a4","Back to the Future (NES)",403],["XjUz8IT0CYg","Teenage Mutant Ninja Turtles (NES)",425],["l-6WakV0kWM","Who Framed Roger Rabbit (NES)",227],["9DfdRdOM_B0","The Karate Kid (NES)",270],["6M_4Yqk65f8","Dr. Jekyll and Mr. Hyde (NES)",390],["V4we8iFk-fY","Castlevania II: Simon's Quest (NES)",567]]}]}</script>
+<script>
+const $=s=>document.querySelector(s);
+const K={draft:'cybercable.draft',preview:'cybercable.preview',gh:'cybercable.gh',last:'cybercable.last',vol:'cybercable.vol'};
+const LS={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=s=>{s=Math.max(0,Math.floor(s));const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return(h?h+':'+String(m).padStart(2,'0'):m)+':'+String(x).padStart(2,'0')};
+const clockOf=ms=>new Date(ms).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+const uid=()=>'ch-'+Math.random().toString(36).slice(2,9);
+const slugify=s=>String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'channel';
+const ORIGIN=location.protocol.startsWith('http')?location.origin:undefined;
+
+function norm(d){
+const chs=((d&&d.channels)||[]).map((c,i)=>({id:c.id||uid(),number:+c.number||i+1,slug:c.slug||slugify(c.name||'ch'+(i+1)),name:c.name||'Channel '+(i+1),tagline:c.tagline||'',color:c.color||'#00f0ff',epoch:c.epoch&&!isNaN(Date.parse(c.epoch))?c.epoch:new Date().toISOString(),shuffle:!!c.shuffle,hidden:!!c.hidden,videos:(c.videos||[]).filter(v=>Array.isArray(v)&&v[0]&&+v[2]>0).map(v=>[String(v[0]),String(v[1]||v[0]),Math.round(+v[2])])}));
+chs.sort((a,b)=>a.number-b.number);
+return{version:1,channels:chs};
+}
+function hashStr(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function rng(seed){return()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function order(ch,cycle){const o=ch.videos.map((_,i)=>i);if(ch.shuffle){const r=rng(hashStr(ch.id)+cycle*7919);for(let i=o.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[o[i],o[j]]=[o[j],o[i]]}}return o}
+function total(ch){let t=0;for(const v of ch.videos)t+=v[2];return t}
+function locate(ch,abs){
+const T=total(ch);if(!T)return null;
+const cycle=Math.floor(abs/T);let r=abs-cycle*T;let start=cycle*T;const o=order(ch,cycle);
+for(let k=0;k<o.length;k++){const v=ch.videos[o[k]];if(r<v[2])return{cycle,k,v,start,off:r,dur:v[2]};r-=v[2];start+=v[2]}
+const v=ch.videos[o[o.length-1]];return{cycle,k:o.length-1,v,start:start-v[2],off:v[2]-.5,dur:v[2]};
+}
+const nextOf=(ch,l)=>locate(ch,l.start+l.dur+.001);
+const epochMs=ch=>Date.parse(ch.epoch);
+const liveAbs=ch=>(Date.now()-epochMs(ch))/1000;
+
+const V={data:null,src:'seed',chs:[],ci:0,player:null,ready:false,powered:false,loc:null,live:true,paused:false,loadedAt:0,lost:null,lostUntil:0,pendingSlug:null,guideAt:0,muted:false};
+const cur=()=>V.chs[V.ci];
+
+async function loadData(){
+const draft=LS.get(K.draft,null);
+if(draft&&LS.get(K.preview,false)){V.src='draft';return norm(draft)}
+if(ORIGIN){try{const r=await fetch('channels.json?t='+Date.now(),{cache:'no-store'});if(r.ok){V.src='live';return norm(await r.json())}}catch(e){}}
+V.src='seed';return norm(JSON.parse($('#seed').textContent));
+}
+function applyData(d){
+V.data=d;V.chs=d.channels.filter(c=>!c.hidden&&c.videos.length);
+const p=$('#srcPill');p.textContent=V.src==='draft'?'DRAFT PREVIEW':'SIGNAL OK · '+V.chs.length+' CH';p.classList.toggle('draft',V.src==='draft');
+$('#powerInfo').textContent=V.chs.length?V.chs.length+' CHANNEL'+(V.chs.length>1?'S':'')+' ON THE GRID':'NO CHANNELS YET — OPEN #admin';
+}
+
+const cv=$('#static'),cx=cv.getContext('2d');let staticRaf=0,staticUntil=0,audio=null;
+function staticFrame(){const img=cx.createImageData(cv.width,cv.height),d=img.data;for(let i=0;i<d.length;i+=4){const g=Math.random()*255|0;const t=Math.random()<.02;d[i]=t?255:g;d[i+1]=g;d[i+2]=t?214:g;d[i+3]=255}cx.putImageData(img,0,0);staticRaf=requestAnimationFrame(staticFrame)}
+let staticSafe=0;function staticOn(ms){cv.classList.add('on');staticUntil=Date.now()+(ms||450);if(!staticRaf)staticFrame();blip();clearTimeout(staticSafe);staticSafe=setTimeout(()=>staticOff(true),4500)}
+function staticOff(force){if(!force&&Date.now()<staticUntil){setTimeout(()=>staticOff(),staticUntil-Date.now());return}cv.classList.remove('on');setTimeout(()=>{if(!cv.classList.contains('on')){cancelAnimationFrame(staticRaf);staticRaf=0}},300)}
+function blip(){if(!audio||V.muted)return;try{const t=audio.currentTime,len=.22,b=audio.createBuffer(1,audio.sampleRate*len,audio.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*(1-i/d.length);const s=audio.createBufferSource();s.buffer=b;const g=audio.createGain();g.gain.value=.05*($('#volume').value/100);s.connect(g).connect(audio.destination);s.start(t);const o=audio.createOscillator(),og=audio.createGain();o.type='square';o.frequency.setValueAtTime(1320,t);o.frequency.exponentialRampToValueAtTime(440,t+.08);og.gain.setValueAtTime(.03*($('#volume').value/100),t);og.gain.exponentialRampToValueAtTime(.0001,t+.1);o.connect(og).connect(audio.destination);o.start(t);o.stop(t+.12)}catch(e){}}
+
+let osdT=0;
+function osd(full){const c=cur();if(!c)return;$('#osdNum').textContent=String(c.number).padStart(2,'0');$('#osdName').textContent=c.name;$('#osdTag').textContent=full?c.tagline:'';$('#osdProg').textContent=V.loc?'▶ '+V.loc.v[1]:'';$('#osd').classList.add('on');clearTimeout(osdT);osdT=setTimeout(()=>$('#osd').classList.remove('on'),full?4200:2600)}
+function setTheme(){const c=cur();document.documentElement.style.setProperty('--ch',c?c.color:'#00f0ff');$('#bug').textContent=c?String(c.number).padStart(2,'0')+' '+c.name:''}
+
+function playAt(loc){
+V.loc=loc;V.loadedAt=Date.now();V.paused=false;clearLost();
+if(V.ready)V.player.loadVideoById({videoId:loc.v[0],startSeconds:Math.max(0,Math.floor(loc.off))});
+renderNow();
+}
+function tune(i,opts){
+opts=opts||{};if(!V.chs.length)return noSignal();
+V.ci=((i%V.chs.length)+V.chs.length)%V.chs.length;const c=cur();
+LS.set(K.last,c.slug);if(location.hash.slice(1)!==c.slug)history.replaceState(null,'','#'+c.slug);
+setTheme();V.live=true;if(!opts.quiet)staticOn(500);
+playAt(locate(c,liveAbs(c)));osd(!opts.quiet);renderGuide(true);
+}
+function tuneSlug(slug){const i=V.chs.findIndex(c=>c.slug===slug);tune(i<0?0:i)}
+function noSignal(){$('#lost').classList.remove('hidden');$('#lostMsg').textContent='No channels are on the air yet. Open the sysop console at #admin to create one.';$('#lost h2').textContent='NO SIGNAL';$('#lost h2').dataset.t='NO SIGNAL'}
+function clearLost(){clearTimeout(V.lost);V.lost=null;V.lostUntil=0;$('#lost').classList.add('hidden')}
+function lostSignal(code){
+const c=cur();if(!c||!V.loc)return;staticOff(true);
+$('#lost h2').textContent='SIGNAL LOST';$('#lost h2').dataset.t='SIGNAL LOST';$('#lost').classList.remove('hidden');
+const why=code===101||code===150?'This program cannot be broadcast outside YouTube.':'This program is unavailable.';
+if(V.live){const endAbs=V.loc.start+V.loc.dur;V.lostUntil=endAbs;const wait=Math.max(1,(endAbs-liveAbs(c)))*1000;$('#lostMsg').textContent=why+' Next program in '+fmt(wait/1000)+'.';clearTimeout(V.lost);V.lost=setTimeout(()=>{clearLost();tune(V.ci,{quiet:true})},wait+400)}
+else{$('#lostMsg').textContent=why+' Skipping ahead...';clearTimeout(V.lost);V.lost=setTimeout(()=>{clearLost();advance()},2500)}
+}
+function curAbs(){if(!V.loc)return 0;let t=V.loc.off;try{if(V.ready&&Date.now()-V.loadedAt>1500){const x=V.player.getCurrentTime();if(x>0)t=x}}catch(e){}return V.loc.start+t}
+function advance(){
+const c=cur();if(!c||!V.loc)return;
+if(V.live){const l=locate(c,liveAbs(c));if(l.start===V.loc.start&&l.v[0]===V.loc.v[0]){const n=nextOf(c,l);n.off=0;playAt(n)}else playAt(l)}
+else{const n=nextOf(c,V.loc);n.off=0;playAt(n)}
+}
+function moveTo(t){
+const c=cur();const la=liveAbs(c);
+if(t>=la-1.5){goLive(true);return}
+V.live=false;
+if(V.loc&&t>=V.loc.start&&t<V.loc.start+V.loc.dur){V.player.seekTo(t-V.loc.start,true)}
+else{const l=locate(c,t);const wasPaused=V.paused;playAt(l);if(wasPaused)setTimeout(()=>{V.player.pauseVideo()},800)}
+renderNow();
+}
+function seekRel(d){if(!V.loc)return;moveTo(curAbs()+d)}
+function restart(){if(!V.loc)return;V.live=false;V.player.seekTo(0,true);if(V.paused)V.player.playVideo();renderNow()}
+function togglePause(){if(!V.loc||!V.ready)return;if(V.paused){V.player.playVideo()}else{V.player.pauseVideo();V.paused=true;V.live=false}renderNow()}
+function goLive(quiet){if(!V.chs.length)return;tune(V.ci,{quiet:quiet!==false})}
+
+function renderNow(){
+const c=cur();if(!c||!V.loc)return;
+const la=liveAbs(c),ca=curAbs(),pos=Math.min(V.loc.dur,Math.max(0,ca-V.loc.start));
+$('#nowTitle').textContent=V.loc.v[1];
+$('#barFill').style.width=(pos/V.loc.dur*100)+'%';
+const lp=(la-V.loc.start)/V.loc.dur;const u=$('#barLive');u.style.display=!V.live&&lp>=0&&lp<=1?'':'none';u.style.left=(lp*100)+'%';
+$('#tPos').textContent=fmt(pos);$('#tDur').textContent=fmt(V.loc.dur);
+const n=nextOf(c,V.loc);$('#nextTitle').innerHTML='NEXT <b>'+esc(n.v[1])+'</b>';
+const behind=la-ca,pill=$('#livePill');
+if(V.live){pill.className='live';pill.textContent='LIVE'}else{pill.className='behind';pill.textContent=V.paused?'PAUSED −'+fmt(behind):'−'+fmt(behind)+' BEHIND'}
+$('#goLive').classList.toggle('pulse',!V.live);
+$('#playBtn').innerHTML=V.paused?'&#9654; Play':'&#10073;&#10073; Pause';
+$('#paused').classList.toggle('hidden',!V.paused);
+$('#fwdBtn').disabled=V.live;
+}
+function tick(){
+$('#clock').textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+const c=cur();if(!V.powered||!c||!V.loc)return;
+if(V.lostUntil){$('#lostMsg').textContent=$('#lostMsg').textContent.replace(/Next program in [\d:]+/,'Next program in '+fmt(V.lostUntil-liveAbs(c)))}
+let st=-1;try{st=V.player.getPlayerState()}catch(e){}
+if(V.live&&!V.lost&&st===1&&Date.now()-V.loadedAt>5000){const la=liveAbs(c),drift=la-curAbs();if(Math.abs(drift)>4){const l=locate(c,la);if(l.start===V.loc.start&&l.v[0]===V.loc.v[0]){V.player.seekTo(l.off,true);V.loadedAt=Date.now()}else playAt(l)}}
+if(!V.live&&!V.paused&&st===1&&liveAbs(c)-curAbs()<1.5)V.live=true;
+renderNow();
+if($('#guide').classList.contains('open')&&Date.now()-V.guideAt>5000)renderGuide();
+}
+
+function renderGuide(force){
+if(!force&&!$('#guide').classList.contains('open'))return;V.guideAt=Date.now();
+$('#guideBody').innerHTML=V.chs.map((c,i)=>{const la=liveAbs(c),l=locate(c,la);const ups=[];let n=l;for(let k=0;k<4;k++){n=nextOf(c,n);ups.push(n)}const em=epochMs(c);
+return`<div class="gch${i===V.ci?' cur':''}" data-i="${i}" style="--c:${esc(c.color)}"><div class="h"><span class="n">${String(c.number).padStart(2,'0')}</span><span class="nm">${esc(c.name)}</span></div><div class="now">▶ ${esc(l.v[1])}</div><div class="bar"><i style="width:${(l.off/l.dur*100).toFixed(1)}%"></i></div><ol>${ups.map(u=>`<li><span>${clockOf(em+u.start*1000)}</span>${esc(u.v[1])}</li>`).join('')}</ol></div>`}).join('')||'<p class="note">No channels on the air.</p>';
+}
+function toggleGuide(open){const g=$('#guide');const o=open==null?!g.classList.contains('open'):open;g.classList.toggle('open',o);if(o)renderGuide(true)}
+
+function onState(e){
+if(e.data===1){V.paused=false;staticOff();$('#paused').classList.add('hidden')}
+else if(e.data===2){V.paused=true}
+else if(e.data===0){advance()}
+renderNow();
+}
+function makePlayer(){
+V.player=new YT.Player('yt',{width:'100%',height:'100%',playerVars:{autoplay:1,controls:0,disablekb:1,fs:0,rel:0,modestbranding:1,iv_load_policy:3,playsinline:1,origin:ORIGIN},events:{onReady:()=>{V.ready=true;V.player.setVolume(+$('#volume').value);if(V.powered&&V.loc)playAt({...V.loc,off:V.live?locate(cur(),liveAbs(cur())).off:V.loc.off})},onStateChange:onState,onError:e=>lostSignal(e.data)}});
+}
+window.onYouTubeIframeAPIReady=()=>{makePlayer();if(A.wantProbe)A.wantProbe()};
+
+function powerOn(){
+if(V.powered)return;V.powered=true;$('#power').classList.add('hidden');
+try{audio=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}
+if(!V.chs.length)return noSignal();
+const want=V.pendingSlug||LS.get(K.last,null);tuneSlug(want);
+}
+
+function setVol(v){v=Math.max(0,Math.min(100,v));$('#volume').value=v;LS.set(K.vol,v);if(V.ready)V.player.setVolume(v);if(v>0&&V.muted)toggleMute(false)}
+function toggleMute(m){V.muted=m==null?!V.muted:m;if(V.ready){V.muted?V.player.mute():V.player.unMute()}$('#muteBtn').innerHTML=V.muted?'&#128263;':'&#128266;'}
+function toggleFs(){const tv=$('#tv');if(document.fullscreenElement)document.exitFullscreen();else if(tv.requestFullscreen)tv.requestFullscreen()}
+
+let numBuf='',numT=0;
+document.addEventListener('keydown',e=>{
+if(!$('#admin').classList.contains('hidden'))return;
+if(e.target.closest('input,textarea'))return;
+if(!V.powered){if(e.key==='Enter'||e.key===' '){e.preventDefault();powerOn()}return}
+const k=e.key;
+if(k==='ArrowUp'||k==='PageUp'){e.preventDefault();tune(V.ci+1)}
+else if(k==='ArrowDown'||k==='PageDown'){e.preventDefault();tune(V.ci-1)}
+else if(k===' '){e.preventDefault();togglePause()}
+else if(k==='ArrowLeft'){e.preventDefault();seekRel(-60)}
+else if(k==='ArrowRight'){e.preventDefault();seekRel(60)}
+else if(k==='r'||k==='R')restart();
+else if(k==='l'||k==='L')goLive(false);
+else if(k==='g'||k==='G')toggleGuide();
+else if(k==='m'||k==='M')toggleMute();
+else if(k==='f'||k==='F')toggleFs();
+else if(k==='Escape')toggleGuide(false);
+else if(/^\d$/.test(k)){numBuf+=k;clearTimeout(numT);numT=setTimeout(()=>{const n=+numBuf;numBuf='';const i=V.chs.findIndex(c=>c.number===n);if(i>=0)tune(i)},700)}
+});
+$('#jackIn').onclick=powerOn;
+$('#chUp').onclick=()=>tune(V.ci+1);$('#chDown').onclick=()=>tune(V.ci-1);
+$('#restartBtn').onclick=restart;$('#backBtn').onclick=()=>seekRel(-60);$('#fwdBtn').onclick=()=>seekRel(60);
+$('#playBtn').onclick=togglePause;$('#goLive').onclick=()=>goLive(false);
+$('#guideBtn').onclick=()=>toggleGuide();$('#guideClose').onclick=()=>toggleGuide(false);
+$('#guideBody').onclick=e=>{const g=e.target.closest('.gch');if(g){tune(+g.dataset.i);if(innerWidth<700)toggleGuide(false)}};
+$('#shield').onclick=()=>osd(true);$('#shield').ondblclick=toggleFs;
+$('#volume').oninput=e=>setVol(+e.target.value);$('#muteBtn').onclick=()=>toggleMute();$('#fsBtn').onclick=toggleFs;
+$('#volume').value=LS.get(K.vol,80);
+
+const A={data:null,sel:0,gh:LS.get(K.gh,{repo:'',branch:'main',path:'channels.json',token:''}),probe:null,probeCb:null,wantProbe:null,busy:false};
+function status(msg,kind){const s=$('#status');s.textContent=msg||'';s.className=kind||''}
+function adminOpen(){
+$('#app').classList.add('hidden');$('#power').classList.add('hidden');$('#admin').classList.remove('hidden');toggleGuide(false);
+try{V.ready&&V.player.pauseVideo()}catch(e){}
+if(!A.data){const d=LS.get(K.draft,null);A.data=d?norm(d):norm(JSON.parse(JSON.stringify(V.data)));if(d)status('Loaded your unpublished draft from this browser.','busy')}
+$('#ghRepo').value=A.gh.repo||'';$('#ghBranch').value=A.gh.branch||'main';$('#ghPath').value=A.gh.path||'channels.json';$('#ghToken').value=A.gh.token||'';
+$('#ghOut').classList.toggle('hidden',!A.gh.token);$('#ghConnect').textContent=A.gh.token?'Signed in ✓':'Sign in';
+$('#previewDraft').checked=!!LS.get(K.preview,false);
+renderAdmin();
+}
+function adminClose(){$('#admin').classList.add('hidden');$('#app').classList.remove('hidden');if(!V.powered)$('#power').classList.remove('hidden')}
+function dirty(){LS.set(K.draft,A.data);status('Draft saved in this browser — publish to put it on the air.','busy')}
+function selCh(){return A.data.channels[A.sel]}
+function renderAdmin(){
+const L=A.data.channels;if(A.sel>=L.length)A.sel=Math.max(0,L.length-1);
+$('#chList').innerHTML=L.map((c,i)=>`<div class="chItem${i===A.sel?' sel':''}" data-i="${i}" style="--c:${esc(c.color)}"><span class="n">${c.number}</span><div style="flex:1;min-width:0"><div>${esc(c.name)} ${c.hidden?'<span class="off">OFF AIR</span>':''}</div><div class="meta">${c.videos.length} videos · ${fmt(total(c))}</div></div></div>`).join('')||'<p class="note">No channels yet.</p>';
+renderEditor();
+}
+function renderEditor(){
+const c=selCh(),E=$('#editor');
+if(!c){E.innerHTML='<h3>// EDITOR</h3><p class="note">Create a channel to start.</p>';return}
+E.innerHTML=`<h3>// EDIT CHANNEL</h3>
+<div class="row">
+<div class="fld" style="max-width:90px"><label>NUMBER</label><input type="number" min="1" id="eNum" value="${c.number}"></div>
+<div class="fld"><label>NAME</label><input id="eName" value="${esc(c.name)}"></div>
+<div class="fld" style="max-width:180px"><label>LINK NAME (#slug)</label><input id="eSlug" value="${esc(c.slug)}"></div>
+<div class="fld" style="max-width:80px"><label>COLOR</label><input type="color" id="eColor" value="${esc(c.color)}"></div>
+</div>
+<div class="row" style="margin-top:10px">
+<div class="fld"><label>TAGLINE</label><input id="eTag" value="${esc(c.tagline)}"></div>
+<label class="chk"><input type="checkbox" id="eShuf"${c.shuffle?' checked':''}> Shuffle each loop</label>
+<label class="chk"><input type="checkbox" id="eHide"${c.hidden?' checked':''}> Off air</label>
+</div>
+<div class="row" style="margin-top:12px;align-items:center">
+<span class="note">Loop: <b style="color:var(--cyan)">${c.videos.length}</b> videos, <b style="color:var(--cyan)">${fmt(total(c))}</b> · loop started ${esc(new Date(c.epoch).toLocaleString())}</span>
+<span class="spacer" style="flex:1"></span>
+<button class="btn" id="eRestartLoop">Restart loop now</button>
+<button class="btn" id="ePreview">Watch</button>
+<button class="btn warn" id="eDel">Delete channel</button>
+</div>
+<div class="panel" style="margin-top:14px;background:rgba(0,0,0,.25)">
+<h3>// ADD PROGRAMS</h3>
+<div class="fld"><label>YOUTUBE VIDEO OR PLAYLIST LINKS, ONE PER LINE</label><textarea id="eAdd" rows="3" placeholder="https://www.youtube.com/watch?v=...&#10;https://www.youtube.com/playlist?list=..."></textarea></div>
+<div class="row" style="margin-top:8px;align-items:center"><button class="btn mag" id="eAddBtn">Scan &amp; add</button><span class="note">Each video is test-loaded to read its title and length and to check it can play outside YouTube.</span></div>
+<div id="addLog" style="margin-top:8px"></div>
+</div>
+<div class="row" style="margin-top:14px;align-items:center"><h3 style="margin:0;flex:1">// LINEUP</h3><span class="note">Drag rows or use the arrows to reorder.</span></div>
+<div id="vids"></div>`;
+const bind=(id,fn,ev)=>{$(id).addEventListener(ev||'input',e=>{fn(e.target);dirty();renderList()})};
+bind('#eNum',t=>c.number=Math.max(1,+t.value||1));
+bind('#eName',t=>c.name=t.value);
+bind('#eSlug',t=>c.slug=slugify(t.value),'change');
+bind('#eColor',t=>c.color=t.value);
+bind('#eTag',t=>c.tagline=t.value);
+bind('#eShuf',t=>c.shuffle=t.checked,'change');
+bind('#eHide',t=>c.hidden=t.checked,'change');
+$('#eRestartLoop').onclick=()=>{c.epoch=new Date().toISOString();dirty();renderEditor()};
+$('#ePreview').onclick=()=>{LS.set(K.draft,A.data);LS.set(K.preview,true);location.hash=c.slug;location.reload()};
+const del=$('#eDel');del.onclick=()=>{if(del.dataset.arm){A.data.channels.splice(A.sel,1);dirty();renderAdmin()}else{del.dataset.arm=1;del.textContent='Click again to delete';setTimeout(()=>{if(del.isConnected){delete del.dataset.arm;del.textContent='Delete channel'}},3000)}};
+$('#eAddBtn').onclick=addPrograms;
+renderVids();
+}
+function renderList(){const keep=A.sel;const L=A.data.channels;$('#chList').innerHTML=L.map((c,i)=>`<div class="chItem${i===keep?' sel':''}" data-i="${i}" style="--c:${esc(c.color)}"><span class="n">${c.number}</span><div style="flex:1;min-width:0"><div>${esc(c.name)} ${c.hidden?'<span class="off">OFF AIR</span>':''}</div><div class="meta">${c.videos.length} videos · ${fmt(total(c))}</div></div></div>`).join('')}
+function renderVids(){
+const c=selCh(),box=$('#vids');if(!box)return;
+box.innerHTML=c.videos.map((v,i)=>`<div class="vrow" draggable="true" data-i="${i}"><span class="i">${i+1}</span><img loading="lazy" src="https://i.ytimg.com/vi/${esc(v[0])}/mqdefault.jpg" alt=""><span class="t"><a href="https://www.youtube.com/watch?v=${esc(v[0])}" target="_blank" rel="noopener">${esc(v[1])}</a></span><span class="d">${fmt(v[2])}</span><span class="a"><button data-a="up" title="Move up">&#9650;</button><button data-a="dn" title="Move down">&#9660;</button><button data-a="rm" title="Remove">&#10005;</button></span></div>`).join('')||'<p class="note">No programs yet. Paste links above.</p>';
+}
+function moveVid(from,to){const c=selCh();if(to<0||to>=c.videos.length||from===to)return;const [v]=c.videos.splice(from,1);c.videos.splice(to,0,v);dirty();renderVids()}
+$('#editor').addEventListener('click',e=>{const b=e.target.closest('.vrow button');if(!b)return;const i=+b.closest('.vrow').dataset.i,c=selCh();if(b.dataset.a==='up')moveVid(i,i-1);else if(b.dataset.a==='dn')moveVid(i,i+1);else if(b.dataset.a==='rm'){c.videos.splice(i,1);dirty();renderVids();renderList()}});
+let dragI=-1;
+$('#editor').addEventListener('dragstart',e=>{const r=e.target.closest('.vrow');if(!r)return;dragI=+r.dataset.i;r.classList.add('drag');e.dataTransfer.effectAllowed='move'});
+$('#editor').addEventListener('dragover',e=>{const r=e.target.closest('.vrow');if(!r||dragI<0)return;e.preventDefault();document.querySelectorAll('.vrow.over').forEach(x=>x.classList.remove('over'));r.classList.add('over')});
+$('#editor').addEventListener('drop',e=>{const r=e.target.closest('.vrow');if(!r||dragI<0)return;e.preventDefault();moveVid(dragI,+r.dataset.i);dragI=-1});
+$('#editor').addEventListener('dragend',()=>{dragI=-1;document.querySelectorAll('.vrow.drag,.vrow.over').forEach(x=>x.classList.remove('drag','over'))});
+$('#chList').onclick=e=>{const it=e.target.closest('.chItem');if(!it)return;A.sel=+it.dataset.i;renderAdmin()};
+$('#newCh').onclick=()=>{const L=A.data.channels;const n=L.reduce((m,c)=>Math.max(m,c.number),0)+1;let slug='channel-'+n;while(L.some(c=>c.slug===slug))slug+='x';L.push({id:uid(),number:n,slug,name:'New Channel',tagline:'',color:['#00f0ff','#ff2bd6','#f5ff3b','#39ff88','#ff8a00','#9d6bff'][n%6],epoch:new Date().toISOString(),shuffle:false,hidden:false,videos:[]});A.sel=L.length-1;dirty();renderAdmin()};
+
+function parseLinks(text){
+const out=[];for(const raw of text.split(/[\s,]+/)){const s=raw.trim();if(!s)continue;
+let m=s.match(/[?&]list=([\w-]+)/);const vm=s.match(/(?:[?&]v=|youtu\.be\/|\/shorts\/|\/embed\/|\/live\/)([\w-]{11})/);
+if(m&&!vm){out.push({list:m[1]});continue}
+if(vm){out.push({id:vm[1]});continue}
+if(/^[\w-]{11}$/.test(s)){out.push({id:s});continue}
+if(/^(PL|UU|OL|FL|RD)[\w-]{10,}$/.test(s))out.push({list:s});}
+return out;
+}
+function probePlayer(){return new Promise(res=>{
+if(A.probe)return res(A.probe);
+const mk=()=>{const p=new YT.Player('probe',{width:200,height:113,playerVars:{autoplay:0,controls:0,mute:1,playsinline:1,origin:ORIGIN},events:{onReady:()=>{p.mute();A.probe=p;res(p)},onStateChange:e=>A.probeCb&&A.probeCb('state',e.data),onError:e=>A.probeCb&&A.probeCb('error',e.data)}})};
+if(window.YT&&YT.Player)mk();else A.wantProbe=mk;
+})}
+async function probeVideo(id){
+const p=await probePlayer();
+return new Promise(res=>{let done=false,iv=0,to=0;
+const fin=v=>{if(done)return;done=true;clearInterval(iv);clearTimeout(to);A.probeCb=null;try{p.stopVideo()}catch(e){}res(v)};
+const check=()=>{try{const d=p.getDuration(),st=p.getPlayerState();if(d>0&&(st===1||st===2||st===3)){const vd=p.getVideoData()||{};if(vd.video_id&&vd.video_id!==id)return;fin({id,title:vd.title||id,dur:Math.round(d)})}}catch(e){}};
+A.probeCb=(k,v)=>{if(k==='error')fin({id,error:v===101||v===150?'owner blocks embedding':v===100?'removed or private':'unplayable ('+v+')'});else check()};
+iv=setInterval(check,300);to=setTimeout(()=>fin({id,error:'timed out'}),15000);
+p.mute();p.loadVideoById(id);
+})}
+async function playlistIds(list){
+const p=await probePlayer();
+return new Promise(res=>{let n=0;A.probeCb=null;p.cuePlaylist({listType:'playlist',list});const iv=setInterval(()=>{let ids=null;try{ids=p.getPlaylist()}catch(e){}if(ids&&ids.length){clearInterval(iv);res(ids)}else if(++n>60){clearInterval(iv);res([])}},250)})
+}
+async function addPrograms(){
+if(A.busy)return;const c=selCh();if(!c)return;
+const items=parseLinks($('#eAdd').value);const log=$('#addLog');
+if(!items.length){log.textContent='No YouTube links found.';return}
+if(!ORIGIN){log.textContent='Open this page from a web address (GitHub Pages or a local server) so YouTube can load videos.';return}
+A.busy=true;$('#eAddBtn').disabled=true;const lines=[];const say=s=>{lines.push(s);log.textContent=lines.slice(-8).join('\n');log.scrollTop=1e9};
+let ids=[];
+for(const it of items){if(it.id)ids.push(it.id);else{say('Reading playlist '+it.list+'...');const got=await playlistIds(it.list);say(got.length?'  found '+got.length+' videos':'  could not read that playlist');ids.push(...got)}}
+const have=new Set(c.videos.map(v=>v[0]));const todo=[...new Set(ids)].filter(id=>!have.has(id));
+if(ids.length&&!todo.length)say('All of those are already in the lineup.');
+let ok=0,bad=0;
+for(let i=0;i<todo.length;i++){status('Scanning '+(i+1)+' / '+todo.length+'...','busy');const r=await probeVideo(todo[i]);if(r.error){bad++;say('✗ '+todo[i]+' — '+r.error)}else{ok++;c.videos.push([r.id,r.title,r.dur]);say('✓ '+r.title+' ('+fmt(r.dur)+')');if(ok%5===0){renderVids();renderList()}}}
+say('Done: '+ok+' added'+(bad?', '+bad+' skipped':'')+'.');
+if(ok){$('#eAdd').value='';dirty()}else status('');
+A.busy=false;if($('#eAddBtn'))$('#eAddBtn').disabled=false;renderVids();renderList();
+}
+
+const b64e=s=>{const b=new TextEncoder().encode(s);let x='';for(let i=0;i<b.length;i+=0x8000)x+=String.fromCharCode.apply(null,b.subarray(i,i+0x8000));return btoa(x)};
+const b64d=s=>new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\s/g,'')),c=>c.charCodeAt(0)));
+async function gh(method,url,body){
+const r=await fetch('https://api.github.com'+url,{method,cache:'no-store',headers:{'Accept':'application/vnd.github+json','Authorization':'Bearer '+A.gh.token,'X-GitHub-Api-Version':'2022-11-28',...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined});
+const j=await r.json().catch(()=>({}));
+if(!r.ok&&!(method==='GET'&&r.status===404))throw new Error((j.message||'HTTP '+r.status)+(r.status===401?' — check the token':r.status===403?' — the token needs Contents: read and write':''));
+return{status:r.status,j};
+}
+const contentsUrl=()=>'/repos/'+A.gh.repo+'/contents/'+A.gh.path.split('/').map(encodeURIComponent).join('/');
+function readGhForm(){A.gh={repo:$('#ghRepo').value.trim().replace(/^https?:\/\/github\.com\//,'').replace(/\/$/,''),branch:$('#ghBranch').value.trim()||'main',path:$('#ghPath').value.trim()||'channels.json',token:$('#ghToken').value.trim()}}
+$('#ghConnect').onclick=async()=>{
+readGhForm();if(!/^[\w.-]+\/[\w.-]+$/.test(A.gh.repo)||!A.gh.token)return status('Enter the repo as owner/name and a token.','err');
+status('Contacting GitHub...','busy');
+try{const{j}=await gh('GET','/repos/'+A.gh.repo);if(!j.permissions||!j.permissions.push)throw new Error('This token cannot write to '+A.gh.repo);LS.set(K.gh,A.gh);$('#ghOut').classList.remove('hidden');$('#ghConnect').textContent='Signed in ✓';status('Signed in. You can publish to '+A.gh.repo+'/'+A.gh.path+'.','ok')}
+catch(e){status(e.message,'err')}
+};
+$('#ghOut').onclick=()=>{A.gh={...A.gh,token:''};LS.set(K.gh,A.gh);$('#ghToken').value='';$('#ghOut').classList.add('hidden');$('#ghConnect').textContent='Sign in';status('Signed out. Token removed from this browser.','ok')};
+$('#saveGh').onclick=async()=>{
+if(!A.gh.token)return status('Sign in first.','err');
+const bad=A.data.channels.filter((c,i,L)=>L.findIndex(x=>x.number===c.number)!==i||L.findIndex(x=>x.slug===c.slug)!==i);
+if(bad.length)return status('Two channels share a number or link name: '+bad.map(c=>c.name).join(', '),'err');
+status('Publishing...','busy');
+try{const g=await gh('GET',contentsUrl()+'?ref='+encodeURIComponent(A.gh.branch));const sha=g.status===200?g.j.sha:undefined;
+await gh('PUT',contentsUrl(),{message:'Update channel lineup',content:b64e(JSON.stringify(A.data,null,1)),branch:A.gh.branch,sha});
+LS.del(K.draft);LS.set(K.preview,false);$('#previewDraft').checked=false;status('Published. GitHub Pages usually updates within a minute or two.','ok')}
+catch(e){status('Publish failed: '+e.message,'err')}
+};
+$('#loadGh').onclick=async()=>{
+if(!A.gh.token)return status('Sign in first.','err');
+status('Loading from GitHub...','busy');
+try{const g=await gh('GET',contentsUrl()+'?ref='+encodeURIComponent(A.gh.branch));if(g.status===404)return status('No '+A.gh.path+' in the repo yet — publish once to create it.','busy');A.data=norm(JSON.parse(b64d(g.j.content)));A.sel=0;LS.del(K.draft);renderAdmin();status('Loaded the published lineup.','ok')}
+catch(e){status('Load failed: '+e.message,'err')}
+};
+$('#dlJson').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(A.data,null,1)],{type:'application/json'}));a.download='channels.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)};
+$('#upJson').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{A.data=norm(JSON.parse(await f.text()));A.sel=0;dirty();renderAdmin();status('Imported '+f.name+'.','ok')}catch(err){status('That file is not a valid channels file.','err')}e.target.value=''};
+$('#previewDraft').onchange=e=>{LS.set(K.draft,A.data);LS.set(K.preview,e.target.checked);status(e.target.checked?'This browser’s TV now shows your draft.':'This browser’s TV shows the published lineup.','ok')};
+$('#discard').onclick=async()=>{LS.del(K.draft);LS.set(K.preview,false);A.data=norm(JSON.parse(JSON.stringify(await loadData())));A.sel=0;$('#previewDraft').checked=false;renderAdmin();status('Draft discarded.','ok')};
+
+let lastRoute='';
+async function route(){
+const h=decodeURIComponent(location.hash.slice(1));
+if(h==='admin'){adminOpen();lastRoute=h;return}
+if(lastRoute==='admin'){lastRoute=h;const d=await loadData();applyData(d);adminClose();if(V.powered){if(h)tuneSlug(h);else tune(V.ci)}return}
+lastRoute=h;adminClose();
+if(h&&h!==(cur()&&cur().slug)){if(V.powered)tuneSlug(h);else V.pendingSlug=h}
+}
+window.addEventListener('hashchange',route);
+(async()=>{
+applyData(await loadData());
+const h=decodeURIComponent(location.hash.slice(1));if(h&&h!=='admin')V.pendingSlug=h;
+route();
+const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';document.head.appendChild(s);
+setInterval(tick,500);tick();
+})();
+</script>
+</body>
+</html>
