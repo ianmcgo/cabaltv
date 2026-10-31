@@ -407,7 +407,7 @@ const chNum=c=>+c.number===0?'000':String(c.number).padStart(2,'0');
 const uid=()=>'ch-'+Math.random().toString(36).slice(2,9);
 const slugify=s=>String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'channel';
 const ORIGIN=location.protocol.startsWith('http')?location.origin:undefined;
-const BUILD=38;
+const BUILD=39;
 const VER={dataRev:null,snoozeUntil:0,lastCheck:0,offered:0};
 
 const normVids=L=>(L||[]).filter(v=>Array.isArray(v)&&v[0]&&+v[2]>0).map(v=>[String(v[0]),String(v[1]||v[0]),Math.round(+v[2])]);
@@ -510,7 +510,7 @@ else{const n=nextOf(c,bad);n.off=0;playAt(n)}
 function curAbs(){if(!V.loc)return 0;let t=V.loc.off;try{if(V.ready&&Date.now()-V.loadedAt>1500){const x=V.player.getCurrentTime();if(x>0)t=x}}catch(e){}return V.loc.start+t}
 function advance(){
 const c=cur();if(!c||!V.loc||c.type==='grid')return;
-if(V.live){const l=locate(c,liveAbs(c));if(l.start===V.loc.start&&l.v[0]===V.loc.v[0]){const n=nextOf(c,l);n.off=0;playAt(n)}else playAt(l)}
+if(V.live){const n=nextOf(c,V.loc);n.off=0;V.hold[c.slug]=(V.hold[c.slug]||0)+(liveAbs(c)-n.start);playAt(n)}
 else{const n=nextOf(c,V.loc);n.off=0;playAt(n)}
 }
 function moveTo(t){
@@ -561,7 +561,7 @@ if(!V.loc)return;
 if(V.lostUntil){$('#lostMsg').textContent=$('#lostMsg').textContent.replace(/Next program in [\d:]+/,'Next program in '+fmt(V.lostUntil-liveAbs(c)))}
 let st=-1;try{st=V.player.getPlayerState()}catch(e){}
 holdTick(c,st);
-if(V.live&&!V.lost&&!V.inAd&&st===1&&Date.now()-V.loadedAt>5000){const la=liveAbs(c),drift=la-curAbs();if(Math.abs(drift)>4){const l=locate(c,la);if(l.start===V.loc.start&&l.v[0]===V.loc.v[0]){V.player.seekTo(l.off,true);V.loadedAt=Date.now()}else playAt(l)}}
+if(V.live&&!V.lost&&!V.inAd&&st===1&&Date.now()-V.loadedAt>5000){const la=liveAbs(c),drift=la-curAbs();const hh=V.hold[c.slug]||0;if(drift>4||(drift<-4&&hh>=-drift)){V.hold[c.slug]=hh+drift}else if(Math.abs(drift)>4){const l=locate(c,la);if(l.start===V.loc.start&&l.v[0]===V.loc.v[0]){V.player.seekTo(l.off,true);V.loadedAt=Date.now()}else playAt(l)}}
 if(!V.live&&!V.paused&&st===1&&liveAbs(c)-curAbs()<1.5)V.live=true;
 if(st===1&&!V.inAd&&V.loc.dur<V.loc.v[2]-.5&&Date.now()-V.loadedAt>2000&&curAbs()>=V.loc.start+V.loc.dur-.3){advance();return}
 if(st===1&&!V.loc.promo&&V.loc.dur>120&&V.lowerFor!==V.loc.start){const rem=V.loc.start+V.loc.dur-curAbs();if(rem<=20&&rem>3){V.lowerFor=V.loc.start;const n=nextProg(c,V.loc);if(n){$('#lowerTxt').textContent=n.v[1];$('#lower').classList.add('on');setTimeout(()=>$('#lower').classList.remove('on'),9000)}}}
