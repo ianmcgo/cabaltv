@@ -78,7 +78,7 @@ a{color:var(--cyan)}
 #lost{position:absolute;inset:0;z-index:7;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(5,1,13,.75);text-align:center;padding:16px}
 #lost h2{font-family:var(--disp);color:var(--red);letter-spacing:.2em;margin:0;font-size:clamp(1.2rem,4vw,2.2rem)}
 #lost p{margin:0;color:var(--dim)}
-#paused{position:absolute;right:22px;bottom:20px;z-index:6;font-family:var(--disp);font-size:.9rem;letter-spacing:.2em;color:var(--yel);text-shadow:0 0 8px var(--yel);pointer-events:none;animation:blink 1s steps(2) infinite}
+#paused{position:absolute;left:50%;top:16px;transform:translateX(-50%);z-index:6;font-family:var(--disp);font-size:.9rem;letter-spacing:.2em;color:var(--yel);text-shadow:0 0 8px var(--yel);pointer-events:none;animation:blink 1s steps(2) infinite}
 @keyframes blink{50%{opacity:.2}}
 .nowbar>*{min-width:0}
 .nowbar{display:grid;grid-template-columns:minmax(0,1fr) auto;min-width:0;max-width:100%;box-sizing:border-box;gap:6px 16px;align-items:center;background:var(--panel);border:1px solid var(--line);padding:12px 14px;backdrop-filter:blur(6px)}
@@ -408,7 +408,7 @@ const chNum=c=>+c.number===0?'000':String(c.number).padStart(2,'0');
 const uid=()=>'ch-'+Math.random().toString(36).slice(2,9);
 const slugify=s=>String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'channel';
 const ORIGIN=location.protocol.startsWith('http')?location.origin:undefined;
-const BUILD=44;
+const BUILD=45;
 const VER={dataRev:null,snoozeUntil:0,lastCheck:0,offered:0};
 
 const normVids=L=>(L||[]).filter(v=>Array.isArray(v)&&v[0]&&+v[2]>0).map(v=>[String(v[0]),String(v[1]||v[0]),Math.round(+v[2])]);
@@ -524,7 +524,7 @@ renderNow();
 }
 function seekRel(d){if(!V.loc||!V.ready)return;moveTo(curAbs()+d)}
 function restart(){if(!V.loc||!V.ready)return;V.lowerFor=null;V.live=false;pSeek(0,true);if(V.paused)V.player.playVideo();renderNow()}
-function togglePause(){if(!V.loc||!V.ready)return;if(V.paused){V.player.playVideo()}else{V.player.pauseVideo();V.paused=true;V.live=false}renderNow()}
+function togglePause(){if(!V.loc||!V.ready)return;if(V.paused){V.userPause=false;V.player.playVideo()}else{V.userPause=true;V.player.pauseVideo();V.paused=true;V.live=false}renderNow()}
 function goLive(quiet){if(!V.chs.length)return;tune(V.ci,{quiet:quiet!==false})}
 
 function renderNow(){
@@ -558,7 +558,7 @@ const h=V.hc;V.hc={t:now,ct,vid:V.loc&&V.loc.v[0],st};
 if(!h||!V.loc||!V.live||V.paused||V.lost||h.vid!==V.loc.v[0]||now-V.loadedAt<1500)return;
 const dt=(now-h.t)/1000;if(dt<=0||dt>3)return;
 const adv=ct>=0&&h.ct>=0?ct-h.ct:0;
-const stalled=V.inAd||(st!==2&&st!==0&&adv<dt*.5&&adv>-1);
+const stalled=V.inAd||((st!==2||!V.userPause)&&st!==0&&adv<dt*.5&&adv>-1);
 if(stalled)V.stallAt=now;
 if(V.inAd){V.hold[c.slug]=(V.hold[c.slug]||0)+dt;return}
 if(stalled)V.hold[c.slug]=(V.hold[c.slug]||0)+(dt-Math.max(0,adv))}
@@ -618,8 +618,8 @@ function toggleGuide(open){const g=$('#guide');const o=open==null?!g.classList.c
 function ytReset(){V.ifTouched=false;try{const f=document.querySelector('#yt iframe')||document.getElementById('yt');if(document.activeElement&&document.activeElement.tagName==='IFRAME')document.activeElement.blur();window.focus();if(f){f.style.visibility='hidden';requestAnimationFrame(()=>requestAnimationFrame(()=>{f.style.visibility=''}))}}catch(e){}}
 window.addEventListener('blur',()=>{setTimeout(()=>{if(document.activeElement&&document.activeElement.tagName==='IFRAME')V.ifTouched=true},0)});
 function onState(e){
-if(e.data===1){if(V.paused||V.ifTouched)ytReset();V.paused=false;staticOff();$('#paused').classList.add('hidden');if(V.ccFor!==V.loadedAt){V.ccFor=V.loadedAt;applyCaptions()}}
-else if(e.data===2){V.paused=true}
+if(e.data===1){if(V.paused||V.ifTouched)ytReset();V.paused=false;V.userPause=false;staticOff();$('#paused').classList.add('hidden');if(V.ccFor!==V.loadedAt){V.ccFor=V.loadedAt;applyCaptions()}}
+else if(e.data===2){if(V.userPause){V.paused=true}else{V.paused=false;V.stallAt=Date.now()}}
 else if(e.data===0){advance()}
 renderNow();
 }
