@@ -407,7 +407,7 @@ const chNum=c=>+c.number===0?'000':String(c.number).padStart(2,'0');
 const uid=()=>'ch-'+Math.random().toString(36).slice(2,9);
 const slugify=s=>String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'channel';
 const ORIGIN=location.protocol.startsWith('http')?location.origin:undefined;
-const BUILD=39;
+const BUILD=40;
 const VER={dataRev:null,snoozeUntil:0,lastCheck:0,offered:0};
 
 const normVids=L=>(L||[]).filter(v=>Array.isArray(v)&&v[0]&&+v[2]>0).map(v=>[String(v[0]),String(v[1]||v[0]),Math.round(+v[2])]);
@@ -484,7 +484,7 @@ function osd(full){const c=cur();if(!c)return;$('#osdNum').textContent=chNum(c);
 function setTheme(){const c=cur();document.documentElement.style.setProperty('--ch',c?c.color:'#00f0ff');$('#bug').textContent=c?chNum(c)+' '+c.name:''}
 
 function playAt(loc){
-V.loc=loc;V.loadedAt=Date.now();V.paused=false;clearLost();V.lowerFor=null;$('#lower').classList.remove('on');
+V.loc=loc;V.loadedAt=Date.now();V.good=Math.max(0,Math.floor(loc.off||0));V.gd=null;V.selfSeekAt=Date.now();V.paused=false;clearLost();V.lowerFor=null;$('#lower').classList.remove('on');
 const ch=cur();if(V.powered&&ch&&ch.idents!==false&&!loc.promo&&loc.off<3&&Date.now()-V.tunedAt>1500)showIdent(loc);
 if(V.ready)V.player.loadVideoById({videoId:loc.v[0],startSeconds:Math.max(0,Math.floor(loc.off))});
 renderNow();
@@ -517,12 +517,12 @@ function moveTo(t){
 if(!V.ready)return;const c=cur();const la=liveAbs(c);
 if(t>=la-1.5){goLive(true);return}
 V.live=false;
-if(V.loc&&t>=V.loc.start&&t<V.loc.start+V.loc.dur){V.player.seekTo(t-V.loc.start,true)}
+if(V.loc&&t>=V.loc.start&&t<V.loc.start+V.loc.dur){pSeek(t-V.loc.start,true)}
 else{const l=locate(c,t);const wasPaused=V.paused;playAt(l);if(wasPaused)setTimeout(()=>{V.player.pauseVideo()},800)}
 renderNow();
 }
 function seekRel(d){if(!V.loc||!V.ready)return;moveTo(curAbs()+d)}
-function restart(){if(!V.loc||!V.ready)return;V.lowerFor=null;V.live=false;V.player.seekTo(0,true);if(V.paused)V.player.playVideo();renderNow()}
+function restart(){if(!V.loc||!V.ready)return;V.lowerFor=null;V.live=false;pSeek(0,true);if(V.paused)V.player.playVideo();renderNow()}
 function togglePause(){if(!V.loc||!V.ready)return;if(V.paused){V.player.playVideo()}else{V.player.pauseVideo();V.paused=true;V.live=false}renderNow()}
 function goLive(quiet){if(!V.chs.length)return;tune(V.ci,{quiet:quiet!==false})}
 
@@ -544,6 +544,13 @@ $('#playBtn').innerHTML=V.paused?'&#9654; Play':'&#10073;&#10073; Pause';
 $('#paused').classList.toggle('hidden',!V.paused);
 $('#fwdBtn').disabled=V.live;
 }
+function pSeek(t,a){V.selfSeekAt=Date.now();V.good=t;try{V.player.seekTo(t,a)}catch(e){}}
+function guardTick(st){const now=Date.now();if(!V.loc||!V.ready||V.lost)return;let ct=-1;try{ct=V.player.getCurrentTime()}catch(e){return}
+const g=V.gd;V.gd={t:now,ct,st,id:V.loc.start};if(V.good==null)V.good=V.loc.off||0;
+if(!g||g.id!==V.loc.start||st!==1||g.st!==1||V.inAd)return;
+const dt=(now-g.t)/1000,adv=ct-g.ct;if(dt<=0||dt>3)return;
+if(adv>=0&&adv<=dt*1.6+.5){V.good=ct;return}
+if(adv>dt+3&&now-(V.selfSeekAt||0)>2500&&ct-V.good>4){V.selfSeekAt=now;try{V.player.seekTo(V.good,true)}catch(e){}V.gd=null}}
 function holdTick(c,st){const now=Date.now();let ct=-1,vid='',du=0;try{ct=V.player.getCurrentTime();du=V.player.getDuration();const d=V.player.getVideoData();vid=d&&d.video_id||''}catch(e){}
 const full=V.loc&&V.loc.v[2]||0;V.inAd=!!(V.loc&&((vid&&vid!==V.loc.v[0])||(full>60&&du>0&&Math.abs(du-full)>5)));
 const h=V.hc;V.hc={t:now,ct,vid:V.loc&&V.loc.v[0],st};
@@ -560,8 +567,8 @@ if(c.type==='grid'){gridTick();return}
 if(!V.loc)return;
 if(V.lostUntil){$('#lostMsg').textContent=$('#lostMsg').textContent.replace(/Next program in [\d:]+/,'Next program in '+fmt(V.lostUntil-liveAbs(c)))}
 let st=-1;try{st=V.player.getPlayerState()}catch(e){}
-holdTick(c,st);
-if(V.live&&!V.lost&&!V.inAd&&st===1&&Date.now()-V.loadedAt>5000){const la=liveAbs(c),drift=la-curAbs();const hh=V.hold[c.slug]||0;if(drift>4||(drift<-4&&hh>=-drift)){V.hold[c.slug]=hh+drift}else if(Math.abs(drift)>4){const l=locate(c,la);if(l.start===V.loc.start&&l.v[0]===V.loc.v[0]){V.player.seekTo(l.off,true);V.loadedAt=Date.now()}else playAt(l)}}
+holdTick(c,st);guardTick(st);
+if(V.live&&!V.lost&&!V.inAd&&st===1&&Date.now()-V.loadedAt>5000){const la=liveAbs(c),drift=la-curAbs();const hh=V.hold[c.slug]||0;if(drift>4||(drift<-4&&hh>=-drift)){V.hold[c.slug]=hh+drift}else if(Math.abs(drift)>4){const l=locate(c,la);if(l.start===V.loc.start&&l.v[0]===V.loc.v[0]){pSeek(l.off,true);V.loadedAt=Date.now()}else playAt(l)}}
 if(!V.live&&!V.paused&&st===1&&liveAbs(c)-curAbs()<1.5)V.live=true;
 if(st===1&&!V.inAd&&V.loc.dur<V.loc.v[2]-.5&&Date.now()-V.loadedAt>2000&&curAbs()>=V.loc.start+V.loc.dur-.3){advance();return}
 if(st===1&&!V.loc.promo&&V.loc.dur>120&&V.lowerFor!==V.loc.start){const rem=V.loc.start+V.loc.dur-curAbs();if(rem<=20&&rem>3){V.lowerFor=V.loc.start;const n=nextProg(c,V.loc);if(n){$('#lowerTxt').textContent=n.v[1];$('#lower').classList.add('on');setTimeout(()=>$('#lower').classList.remove('on'),9000)}}}
