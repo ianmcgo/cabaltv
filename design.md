@@ -7,6 +7,9 @@ A cable-TV style site in one `index.html`. Each channel is a looping lineup of Y
 | File | Purpose |
 | --- | --- |
 | `index.html` | The whole app: viewer, guide, admin console. The sample channel (NERD//NET, 235 AVGN episodes, about 62 hours per loop) is embedded as a fallback. |
+| `version.json` | Latest app build and lineup revision (see the updates section). |
+| `manifest.webmanifest`, `icons/` | Install-as-app metadata and icons. |
+| `og/*.jpg`, `c/*.html` | Share preview images and the small per-channel share pages that point to them. |
 | `channels.json` | Created the first time you press **Publish to GitHub**. Once it exists, the TV loads it instead of the embedded sample. |
 
 ## Hosting
@@ -130,6 +133,30 @@ Each video is `[youtubeId, title, durationSeconds]`. Data load order on the TV: 
 Internally, `locate()` checks block instances for the current and previous station day, using `Intl.DateTimeFormat` to turn station-time clock times into UTC, so changes to and from daylight saving time are handled. Otherwise it falls back to the main loop and trims the current item to the next block start. Programs trimmed short end on the schedule, not when YouTube's video ends.
 
 **THE GRID (program guide channel).** A built-in channel (number 99 by default; set the name, number or off switch in the Station panel). It shows a full-screen 90-minute guide, starting at the current half hour, for every channel. The current programs are highlighted and a yellow line marks the time. A spotlight box rotates through what's on now with a thumbnail every 7 seconds, and the list scrolls when there are more channels than fit. A quiet synth pad and arpeggio, generated in the browser, plays on this channel.
+
+## Any screen (phase 10)
+
+**Install as an app.** `manifest.webmanifest` and the icons in `icons/` make the site installable. Chrome and Edge show an **Install** button in the top bar when installing is possible; on iPhone use Share, then Add to Home Screen. Installed, it opens full screen without browser chrome. There is deliberately no service worker: the TV is always online, and caching would get in the way of the refresh popup.
+
+**TV mode** (`T` or the TV mode button). Goes full screen, hides the page chrome and floats the now-playing bar and controls over the picture. After 4 s with no input they fade out and the cursor hides; any key, mouse movement or touch brings them back. `T`, Esc or a remote's Back button leaves TV mode.
+
+**Remote controls and D-pads** (smart TVs, Fire TV and game-console browsers):
+
+| Remote key | Action |
+| --- | --- |
+| Up / Down, Channel +/− | Change channel |
+| Left / Right, Rewind / Fast-forward | Back or forward 1 minute |
+| OK / Enter, Info | Show the channel info overlay |
+| Play/Pause | Pause or resume |
+| Guide (or G) | Open the guide. Up/Down moves the yellow highlight, OK tunes, Back closes. |
+| Back (Esc, Backspace, webOS 461, Tizen 10009) | Close the guide, or leave TV mode |
+| Number keys | Jump to a channel |
+
+All buttons have a visible yellow focus ring for Tab or D-pad focus navigation. When a button has focus, Enter and Space press it instead of acting as TV keys.
+
+**Share links with previews.** **Share** in the top bar uses the phone's share sheet, or copies the link on desktop. For channels that have a share card, the link is `c/<slug>.html`: a tiny page with Open Graph tags (title, tagline and a 1200×630 card image from `og/`) that sends visitors straight to `index.html#<slug>`. Discord, iMessage, X, Facebook and others show the card. Channels without a card get a plain `index.html#slug` link.
+
+In the admin console, **Publish share cards** draws a card for every on-air channel and THE GRID in the browser (canvas, same fonts as the site). It commits `og/<slug>.jpg` and `c/<slug>.html` (skipping unchanged files) and records the list in `settings.cards`, then publishes the lineup. Run it after adding or renaming channels. If you move to a custom domain, fill in **Site address** so the cards carry the right URLs. The home page itself uses `og/default.jpg`.
 
 ## Updates and the refresh popup (phase 7b)
 
