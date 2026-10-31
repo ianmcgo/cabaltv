@@ -100,6 +100,11 @@ Anyone can open `#admin`, but without a token that can write to your repo they c
 
 Each video is `[youtubeId, title, durationSeconds]`. Data load order on the TV: draft (only when preview is on, in the admin's own browser), then `channels.json`, then the embedded sample.
 
+## Channel tools (phase 8)
+
+- **Whole YouTube channels.** In Add programs, paste a `/channel/UC...` link or a bare channel ID. It is turned into that channel's uploads playlist (`UU...`). An `@handle` can't be resolved from the browser, so the console asks for the channel ID instead (Share, then Copy channel ID). The IFrame API lists at most about 200 videos of a playlist; add older ones by link.
+- **Re-check all.** Test-loads every video in the lineup and updates titles and lengths that changed. It lists videos that are now removed, private or blocked from embedding, with a **Remove dead** button. **Stop** cancels part-way. It takes 1–3 s per video, so a 235-video channel needs a few minutes. Timeouts are not counted as dead, since they are usually network hiccups.
+
 ## Updates and the refresh popup (phase 7b)
 
 | File | Field | Meaning |
