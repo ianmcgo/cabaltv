@@ -216,6 +216,22 @@ body.tvmode.idle .nowbar,body.tvmode.idle .controls{opacity:0;pointer-events:non
 body.tvmode.idle{cursor:none}
 .btn:focus-visible,.gch:focus-visible,a:focus-visible{outline:2px solid var(--yel);outline-offset:2px;box-shadow:0 0 16px rgba(245,255,59,.5)}
 .gch.sel{outline:2px solid var(--yel);outline-offset:-2px;background:rgba(245,255,59,.08)}
+#viewers{color:var(--mag);border-color:rgba(255,43,214,.5)}
+#chat{position:fixed;top:0;right:0;bottom:0;width:min(400px,100%);z-index:41;background:rgba(7,3,22,.96);border-left:1px solid var(--mag);box-shadow:-20px 0 60px rgba(0,0,0,.6);transform:translateX(105%);transition:transform .25s ease;display:flex;flex-direction:column}
+#chat.open{transform:none}
+#chat header{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid rgba(255,43,214,.4)}
+#chat header h2{font-family:var(--disp);font-size:1rem;letter-spacing:.2em;margin:0;flex:1;color:var(--cyan)}
+#chatRoom{font-size:.75rem;color:var(--dim);padding:6px 16px;border-bottom:1px solid rgba(255,255,255,.06)}
+#chatLog{flex:1;overflow:auto;padding:10px 16px;display:flex;flex-direction:column;gap:8px;font-size:.9rem;overflow-wrap:anywhere}
+#chatLog .m b{font-weight:400;margin-right:6px}
+#chatLog .m time{color:var(--dim);font-size:.7rem;margin-right:6px}
+#chatLog .sys{color:var(--dim);font-size:.8rem;font-style:italic}
+#chatForm{display:flex;flex-direction:column;gap:8px;padding:12px 16px;border-top:1px solid rgba(255,43,214,.4)}
+#chatForm .row{gap:8px;flex-wrap:nowrap}
+#chatForm input{background:rgba(0,0,0,.45);border:1px solid rgba(0,240,255,.25);padding:.55em .65em;outline:none;color:#fff;min-width:0;flex:1}
+#chatForm input:focus{border-color:var(--cyan)}
+#chatName{max-width:9em}
+.gch .vw{margin-left:auto;color:var(--mag);font-size:.75rem}
 #probeBox{position:fixed;right:0;bottom:0;width:200px;height:113px;opacity:.01;pointer-events:none;z-index:-1}
 @media (max-width:820px){.adm-grid{grid-template-columns:1fr}.vrow{grid-template-columns:2.2em 1fr auto auto}.vrow img{display:none}.vol{margin-left:0}.controls .sep{display:none}.keys{display:none}}
 @media (max-width:520px){#osd{left:14px;top:12px}#osd .tag,#osd .prog,#bug{display:none}.btn{padding:.5em .65em;font-size:.75rem}.nowbar{grid-template-columns:1fr}#livePill{justify-self:start}}
@@ -236,6 +252,8 @@ body.tvmode.idle{cursor:none}
 <span class="spacer"></span>
 <span class="pill" id="clock">--:--:--</span>
 <button class="btn hidden" id="installBtn">&#11015; Install</button>
+<span class="pill hidden" id="viewers" title="People watching this channel / everyone online"></span>
+<button class="btn hidden" id="chatBtn">&#128172; Chat</button>
 <button class="btn" id="shareBtn">&#10148; Share</button>
 <button class="btn" id="guideBtn">&#9776; Guide</button>
 </div>
@@ -287,7 +305,7 @@ body.tvmode.idle{cursor:none}
 <button class="btn mag" id="tvBtn" title="TV mode (T)">&#9635; TV mode</button>
 </div>
 </div>
-<div class="keys"><kbd>&uarr;</kbd><kbd>&darr;</kbd> channel &nbsp; <kbd>0-9</kbd> jump &nbsp; <kbd>Space</kbd> pause &nbsp; <kbd>&larr;</kbd><kbd>&rarr;</kbd> &plusmn;1 min &nbsp; <kbd>R</kbd> restart &nbsp; <kbd>L</kbd> live &nbsp; <kbd>G</kbd> guide &nbsp; <kbd>M</kbd> mute &nbsp; <kbd>F</kbd> fullscreen &nbsp; <kbd>T</kbd> TV mode &nbsp; <kbd>Enter</kbd> info</div>
+<div class="keys"><kbd>&uarr;</kbd><kbd>&darr;</kbd> channel &nbsp; <kbd>0-9</kbd> jump &nbsp; <kbd>Space</kbd> pause &nbsp; <kbd>&larr;</kbd><kbd>&rarr;</kbd> &plusmn;1 min &nbsp; <kbd>R</kbd> restart &nbsp; <kbd>L</kbd> live &nbsp; <kbd>G</kbd> guide &nbsp; <kbd>M</kbd> mute &nbsp; <kbd>F</kbd> fullscreen &nbsp; <kbd>T</kbd> TV mode &nbsp; <kbd>Enter</kbd> info &nbsp; <kbd>C</kbd> chat</div>
 
 <footer>
 <span>Created by Ian McGonigal</span>
@@ -303,6 +321,15 @@ body.tvmode.idle{cursor:none}
 <div id="guideBody"></div>
 </aside>
 
+<aside id="chat" aria-label="Channel chat">
+<header><h2>// CHANNEL CHAT</h2><button class="btn" id="chatClose">&#10005;</button></header>
+<div id="chatRoom"></div>
+<div id="chatLog"></div>
+<form id="chatForm" autocomplete="off">
+<div class="row"><input id="chatName" maxlength="20" placeholder="handle"><input id="chatText" maxlength="200" placeholder="Say something..."><button class="btn mag" type="submit">Send</button></div>
+<span class="note">Be decent. Messages are public to everyone on this channel.</span>
+</form>
+</aside>
 <div id="admin" class="hidden">
 <div class="topbar">
 <div class="logo glow"><span class="glitch" data-t="CYBER//CABLE">CYBER<b>//</b>CABLE</span></div>
@@ -346,6 +373,10 @@ body.tvmode.idle{cursor:none}
 <div class="fld" style="max-width:110px"><label>ITS NUMBER</label><input type="number" min="1" id="sGridNum"></div>
 <div class="fld" style="max-width:220px"><label>ITS NAME</label><input id="sGridName"></div>
 </div>
+<div class="row" style="margin-top:10px">
+<div class="fld" style="flex:3"><label>SOCIAL SERVER (CLOUDFLARE WORKER URL, LEAVE EMPTY TO TURN OFF)</label><input id="sSocial" placeholder="https://cybercable-social.yourname.workers.dev"></div>
+<label class="chk"><input type="checkbox" id="sChat"> Chat</label>
+</div>
 </div>
 <div class="adm-grid">
 <div class="panel">
@@ -372,7 +403,7 @@ const clockOf=ms=>new Date(ms).toLocaleTimeString([],{hour:'numeric',minute:'2-d
 const uid=()=>'ch-'+Math.random().toString(36).slice(2,9);
 const slugify=s=>String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'channel';
 const ORIGIN=location.protocol.startsWith('http')?location.origin:undefined;
-const BUILD=5;
+const BUILD=6;
 const VER={dataRev:null,snoozeUntil:0,lastCheck:0,offered:0};
 
 const normVids=L=>(L||[]).filter(v=>Array.isArray(v)&&v[0]&&+v[2]>0).map(v=>[String(v[0]),String(v[1]||v[0]),Math.round(+v[2])]);
@@ -383,7 +414,7 @@ blocks:(c.blocks||[]).map(b=>({id:b.id||uid(),name:b.name||'Block',days:[...new 
 chs.sort((a,b)=>a.number-b.number);
 const st=(d&&d.settings)||{},g=st.guide||{};
 let tz='UTC';try{if(st.tz){new Intl.DateTimeFormat('en-US',{timeZone:st.tz});tz=st.tz}}catch(e){}
-return{version:1,settings:{tz,guide:{enabled:g.enabled!==false,number:Math.max(1,Math.round(+g.number||99)),name:g.name||'THE GRID'},cards:Array.isArray(st.cards)?st.cards.filter(x=>typeof x==='string'):[]},channels:chs};
+return{version:1,settings:{tz,guide:{enabled:g.enabled!==false,number:Math.max(1,Math.round(+g.number||99)),name:g.name||'THE GRID'},cards:Array.isArray(st.cards)?st.cards.filter(x=>typeof x==='string'):[],social:{url:/^(https?|wss?):\/\/[^\s]+$/.test((st.social&&st.social.url)||'')?st.social.url.replace(/\/+$/,''):'',chat:!(st.social&&st.social.chat===false)}},channels:chs};
 }
 function hashStr(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
 function rng(seed){return()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
@@ -430,7 +461,7 @@ if(draft&&LS.get(K.preview,false)){V.src='draft';return norm(draft)}
 if(ORIGIN){try{const r=await fetch('channels.json?t='+Date.now(),{cache:'no-store'});if(r.ok){V.src='live';return norm(await r.json())}}catch(e){}}
 V.src='seed';return norm(JSON.parse($('#seed').textContent));
 }
-function applyData(d){
+function applyData(d){setTimeout(()=>{try{socialStart()}catch(e){}},0);
 V.data=d;V.chs=d.channels.filter(c=>!c.hidden&&c.videos.length);
 const G=d.settings&&d.settings.guide;if(G&&G.enabled&&V.chs.length){V.chs.push({id:'grid',type:'grid',number:G.number,slug:'grid',name:G.name,tagline:'What is on every channel, right now and next.',color:'#00f0ff',videos:[],blocks:[]});V.chs.sort((a,b)=>a.number-b.number)}
 const realN=V.chs.filter(c=>c.type!=='grid').length;
@@ -457,7 +488,7 @@ renderNow();
 function tune(i,opts){
 opts=opts||{};if(!V.chs.length)return noSignal();
 V.ci=((i%V.chs.length)+V.chs.length)%V.chs.length;const c=cur();
-LS.set(K.last,c.slug);if(location.hash.slice(1)!==c.slug)history.replaceState(null,'','#'+c.slug);
+LS.set(K.last,c.slug);if(location.hash.slice(1)!==c.slug)history.replaceState(null,'','#'+c.slug);socialJoin();
 setTheme();V.live=true;V.tunedAt=Date.now();if(!opts.quiet)staticOn(500);
 if(c.type==='grid'){V.loc=null;clearLost();try{V.player.stopVideo()}catch(e){}showGrid();staticOff();osd(!opts.quiet);renderGuide(true);renderNow();return}
 hideGrid();playAt(locate(c,liveAbs(c)));osd(!opts.quiet);renderGuide(true);
@@ -528,7 +559,7 @@ function renderGuide(force){
 if(!force&&!$('#guide').classList.contains('open'))return;V.guideAt=Date.now();
 $('#guideBody').innerHTML=V.chs.map((c,i)=>{if(c.type==='grid')return`<div class="gch${i===V.ci?' cur':''}" data-i="${i}" style="--c:${esc(c.color)}"><div class="h"><span class="n">${String(c.number).padStart(2,'0')}</span><span class="nm">${esc(c.name)}</span></div><div class="now">${esc(c.tagline)}</div></div>`;
 const la=liveAbs(c),l=locate(c,la);const ups=[];let n=l;for(let k=0;k<4&&n;k++){n=nextProg(c,n);if(n)ups.push(n)}const em=epochMs(c);
-return`<div class="gch${i===V.ci?' cur':''}" data-i="${i}" style="--c:${esc(c.color)}"><div class="h"><span class="n">${String(c.number).padStart(2,'0')}</span><span class="nm">${esc(c.name)}</span></div><div class="now">${l.promo?'PROMO BREAK':'▶ '+esc(l.v[1])}${l.block?' <span style="color:var(--yel)">\u00b7 '+esc(l.block)+'</span>':''}</div><div class="bar"><i style="width:${(l.off/l.dur*100).toFixed(1)}%"></i></div><ol>${ups.map(u=>`<li><span>${clockOf(em+u.start*1000)}</span>${esc(u.v[1])}</li>`).join('')}</ol></div>`}).join('')||'<p class="note">No channels on the air.</p>';
+return`<div class="gch${i===V.ci?' cur':''}" data-i="${i}" style="--c:${esc(c.color)}"><div class="h"><span class="n">${String(c.number).padStart(2,'0')}</span><span class="nm">${esc(c.name)}</span>${SO.on&&SO.counts[c.slug]?`<span class="vw">\u25C9 ${SO.counts[c.slug]}</span>`:''}</div><div class="now">${l.promo?'PROMO BREAK':'▶ '+esc(l.v[1])}${l.block?' <span style="color:var(--yel)">\u00b7 '+esc(l.block)+'</span>':''}</div><div class="bar"><i style="width:${(l.off/l.dur*100).toFixed(1)}%"></i></div><ol>${ups.map(u=>`<li><span>${clockOf(em+u.start*1000)}</span>${esc(u.v[1])}</li>`).join('')}</ol></div>`}).join('')||'<p class="note">No channels on the air.</p>';
 }
 let identT=0;
 function showIdent(loc){const c=cur(),el=$('#ident');$('#idNum').textContent='CHANNEL '+String(c.number).padStart(2,'0');$('#idName').textContent=c.name;$('#idProg').textContent=(loc.block?loc.block.toUpperCase()+' // ':'NOW // ')+loc.v[1];el.classList.remove('on');void el.offsetWidth;el.classList.add('on');clearTimeout(identT);identT=setTimeout(()=>el.classList.remove('on'),3500);identTone()}
@@ -559,7 +590,7 @@ const ar=audio.createOscillator(),ag=audio.createGain();ar.type='square';ag.gain
 oscs=oscs.slice(-24);timer=setTimeout(play,4000)};let timer=0;play();
 GR.music={stop(){alive=false;clearTimeout(timer);out.gain.setTargetAtTime(0,audio.currentTime,.15);setTimeout(()=>{try{out.disconnect()}catch(e){}},800)}};
 }
-function toggleGuide(open){const g=$('#guide');const o=open==null?!g.classList.contains('open'):open;g.classList.toggle('open',o);if(o)renderGuide(true)}
+function toggleGuide(open){const g=$('#guide');const o=open==null?!g.classList.contains('open'):open;g.classList.toggle('open',o);if(o){renderGuide(true);if(typeof toggleChat==='function')toggleChat(false)}}
 
 function onState(e){
 if(e.data===1){V.paused=false;staticOff();$('#paused').classList.add('hidden')}
@@ -600,6 +631,7 @@ if(k==='ArrowDown'){e.preventDefault();guideMove(1);return}
 if(k==='Enter'){e.preventDefault();const i=V.gsel==null?V.ci:V.gsel;toggleGuide(false);tune(i);return}
 if(back||k==='g'||k==='G'||k==='Guide'){e.preventDefault();toggleGuide(false);return}
 }
+if($('#chat').classList.contains('open')&&back){e.preventDefault();toggleChat(false);return}
 if(k==='ArrowUp'||k==='PageUp'||k==='ChannelUp'){e.preventDefault();tune(V.ci+1)}
 else if(k==='ArrowDown'||k==='PageDown'||k==='ChannelDown'){e.preventDefault();tune(V.ci-1)}
 else if(k===' '||k==='MediaPlayPause'||k==='MediaPlay'||k==='MediaPause'){e.preventDefault();togglePause()}
@@ -612,6 +644,7 @@ else if(k==='g'||k==='G'||k==='Guide'){V.gsel=null;toggleGuide();if($('#guide').
 else if(k==='m'||k==='M'||k==='AudioVolumeMute')toggleMute();
 else if(k==='f'||k==='F')toggleFs();
 else if(k==='t'||k==='T')setTvMode(!document.body.classList.contains('tvmode'));
+else if((k==='c'||k==='C')&&SO.on&&SO.chat){e.preventDefault();toggleChat()}
 else if(back){if(document.body.classList.contains('tvmode')){e.preventDefault();setTvMode(false)}}
 else if(/^\d$/.test(k)){numBuf+=k;clearTimeout(numT);numT=setTimeout(()=>{const n=+numBuf;numBuf='';const i=V.chs.findIndex(c=>c.number===n);if(i>=0)tune(i)},700)}
 });
@@ -651,12 +684,14 @@ $('#ghOut').classList.toggle('hidden',!A.gh.token);$('#ghConnect').textContent=A
 $('#previewDraft').checked=!!LS.get(K.preview,false);
 renderStation();renderAdmin();
 }
-function renderStation(){const S=A.data.settings;$('#sTz').value=S.tz;$('#sGrid').checked=S.guide.enabled;$('#sGridNum').value=S.guide.number;$('#sGridName').value=S.guide.name;
+function renderStation(){const S=A.data.settings;$('#sTz').value=S.tz;$('#sGrid').checked=S.guide.enabled;$('#sGridNum').value=S.guide.number;$('#sGridName').value=S.guide.name;$('#sSocial').value=S.social.url;$('#sChat').checked=S.social.chat;
 const dl=$('#tzList');if(!dl.children.length&&Intl.supportedValuesOf){try{dl.innerHTML=Intl.supportedValuesOf('timeZone').map(z=>'<option value="'+esc(z)+'">').join('')}catch(e){}}}
 $('#sTz').addEventListener('change',e=>{const z=e.target.value.trim();try{new Intl.DateTimeFormat('en-US',{timeZone:z});A.data.settings.tz=z;dirty()}catch(err){status('Unknown time zone: '+z,'err');e.target.value=A.data.settings.tz}});
 $('#sGrid').addEventListener('change',e=>{A.data.settings.guide.enabled=e.target.checked;dirty()});
 $('#sGridNum').addEventListener('input',e=>{A.data.settings.guide.number=Math.max(1,+e.target.value||99);dirty()});
 $('#sGridName').addEventListener('input',e=>{A.data.settings.guide.name=e.target.value||'THE GRID';dirty()});
+$('#sSocial').addEventListener('change',e=>{const u=e.target.value.trim().replace(/\/+$/,'');if(u&&!/^(https|wss):\/\/\S+$/.test(u)){status('The social server address must start with https://','err');e.target.value=A.data.settings.social.url;return}A.data.settings.social.url=u;dirty()});
+$('#sChat').addEventListener('change',e=>{A.data.settings.social.chat=e.target.checked;dirty()});
 function adminClose(){$('#admin').classList.add('hidden');$('#app').classList.remove('hidden');if(!V.powered)$('#power').classList.remove('hidden')}
 function dirty(){LS.set(K.draft,A.data);status('Draft saved in this browser — publish to put it on the air.','busy')}
 function selCh(){return A.data.channels[A.sel]}
@@ -937,6 +972,34 @@ await ghPutFile('c/'+c.slug+'.html',b64e(cardPage(c,B)),'Share page: '+c.name)}
 S.cards=list.map(c=>c.slug);LS.set(K.draft,A.data);A.busy=false;await publishAll('Share cards ready. ');}
 catch(e){A.busy=false;status('Share cards failed: '+e.message,'err')}
 }
+const SO={on:false,chat:false,ws:null,url:'',room:'',counts:{},retry:0,retryT:0,pingT:0,msgs:[],unread:0};
+function socialCfg(){const so=V.data&&V.data.settings&&V.data.settings.social;return so&&so.url?{url:so.url.replace(/^http/,'ws')+'/ws',chat:so.chat}:null}
+function socialStart(){const cfg=socialCfg();
+if(!cfg){if(SO.ws){try{SO.ws.close()}catch(e){}}SO.on=false;SO.url='';$('#viewers').classList.add('hidden');$('#chatBtn').classList.add('hidden');toggleChat(false);return}
+SO.on=true;SO.chat=cfg.chat;$('#chatBtn').classList.toggle('hidden',!SO.chat);if(!SO.chat)toggleChat(false);
+if(SO.ws&&SO.url===cfg.url)return;if(SO.ws){try{SO.ws.onclose=null;SO.ws.close()}catch(e){}}SO.url=cfg.url;socialOpen()}
+function socialOpen(){clearTimeout(SO.retryT);let ws;try{ws=new WebSocket(SO.url)}catch(e){return socialRetry()}SO.ws=ws;
+ws.onopen=()=>{SO.retry=0;socialJoin();clearInterval(SO.pingT);SO.pingT=setInterval(()=>{if(ws.readyState===1)ws.send('{"t":"ping"}')},25000)};
+ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(err){return}
+if(m.t==='counts'){SO.counts=m.counts||{};renderViewers();if($('#guide').classList.contains('open'))renderGuide(true)}
+else if(m.t==='history'&&m.room===SO.room){SO.msgs=m.msgs||[];renderChat()}
+else if(m.t==='chat'&&m.room===SO.room){SO.msgs.push(m.msg);if(SO.msgs.length>120)SO.msgs.shift();renderChat();if(!$('#chat').classList.contains('open')){SO.unread++;renderChatBtn()}}
+else if(m.t==='err')toast('// '+String(m.msg||'').toUpperCase())};
+ws.onclose=()=>{clearInterval(SO.pingT);if(SO.ws===ws){SO.ws=null;$('#viewers').classList.add('hidden');socialRetry()}}}
+function socialRetry(){if(!SO.on)return;clearTimeout(SO.retryT);SO.retryT=setTimeout(socialOpen,Math.min(30000,1000*2**SO.retry++))}
+function socialJoin(){const c=cur();const room=c?c.slug:'';if(room!==SO.room){SO.room=room;SO.msgs=[];SO.unread=0;renderChat();renderChatBtn()}renderViewers();if(SO.ws&&SO.ws.readyState===1&&room)SO.ws.send(JSON.stringify({t:'join',room}))}
+function renderViewers(){const el=$('#viewers');if(!SO.on||!SO.ws||SO.ws.readyState!==1){el.classList.add('hidden');return}const here=SO.counts[SO.room]||0,all=Object.values(SO.counts).reduce((a,b)=>a+b,0);el.textContent='\u25C9 '+here+' WATCHING'+(all>here?' \u00b7 '+all+' ONLINE':'');el.classList.remove('hidden')}
+function renderChatBtn(){$('#chatBtn').innerHTML='&#128172; Chat'+(SO.unread?' <b style="color:var(--yel)">'+Math.min(SO.unread,99)+'</b>':'')}
+const nameCol=n=>'hsl('+(hashStr(n)%360)+' 95% 65%)';
+function renderChat(){const c=cur();$('#chatRoom').textContent=c?'CH '+String(c.number).padStart(2,'0')+' '+c.name:'';const log=$('#chatLog');const near=log.scrollHeight-log.scrollTop-log.clientHeight<60;
+log.innerHTML=SO.msgs.length?SO.msgs.map(m=>`<div class="m"><time>${new Date(m.ts).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}</time><b style="color:${nameCol(m.name)}">${esc(m.name)}</b>${esc(m.text)}</div>`).join(''):'<div class="sys">No messages on this channel yet. Say hi.</div>';
+if(near)log.scrollTop=log.scrollHeight}
+function toggleChat(open){const el=$('#chat');const o=open==null?!el.classList.contains('open'):open;if(o&&!(SO.on&&SO.chat))return;el.classList.toggle('open',o);if(!o&&document.activeElement&&el.contains(document.activeElement))document.activeElement.blur();if(o){toggleGuide(false);SO.unread=0;renderChatBtn();renderChat();const log=$('#chatLog');log.scrollTop=log.scrollHeight;setTimeout(()=>($('#chatName').value?$('#chatText'):$('#chatName')).focus(),250)}}
+$('#chatName').value=LS.get('cybercable.handle','');
+$('#chatBtn').onclick=()=>toggleChat();$('#chatClose').onclick=()=>toggleChat(false);
+$('#chatForm').addEventListener('submit',e=>{e.preventDefault();const name=$('#chatName').value.trim(),text=$('#chatText').value.trim();if(!name){$('#chatName').focus();toast('// PICK A HANDLE FIRST');return}if(!text)return;
+if(!SO.ws||SO.ws.readyState!==1){toast('// CHAT OFFLINE \u2014 RECONNECTING');return}LS.set('cybercable.handle',name);SO.ws.send(JSON.stringify({t:'chat',name,text}));$('#chatText').value=''});
+$('#chatForm').addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();toggleChat(false)}});
 let lastRoute='';
 async function route(){
 const h=decodeURIComponent(location.hash.slice(1));

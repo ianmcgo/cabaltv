@@ -10,6 +10,7 @@ A cable-TV style site in one `index.html`. Each channel is a looping lineup of Y
 | `version.json` | Latest app build and lineup revision (see the updates section). |
 | `manifest.webmanifest`, `icons/` | Install-as-app metadata and icons. |
 | `og/*.jpg`, `c/*.html` | Share preview images and the small per-channel share pages that point to them. |
+| `worker/` | Optional Cloudflare Worker for viewer counts and chat (phase 11). |
 | `channels.json` | Created the first time you press **Publish to GitHub**. Once it exists, the TV loads it instead of the embedded sample. |
 
 ## Hosting
@@ -104,7 +105,12 @@ Anyone can open `#admin`, but without a token that can write to your repo they c
       ]
     }
   ],
-  "settings": {"tz": "Pacific/Guam", "guide": {"enabled": true, "number": 99, "name": "THE GRID"}}
+  "settings": {
+    "tz": "Pacific/Guam",
+    "guide": {"enabled": true, "number": 99, "name": "THE GRID"},
+    "cards": ["avgn", "cards", "retro", "grid"],
+    "social": {"url": "", "chat": true}
+  }
 }
 ```
 
@@ -151,12 +157,37 @@ Internally, `locate()` checks block instances for the current and previous stati
 | Guide (or G) | Open the guide. Up/Down moves the yellow highlight, OK tunes, Back closes. |
 | Back (Esc, Backspace, webOS 461, Tizen 10009) | Close the guide, or leave TV mode |
 | Number keys | Jump to a channel |
+| C | Open or close chat (when the social server is set) |
 
 All buttons have a visible yellow focus ring for Tab or D-pad focus navigation. When a button has focus, Enter and Space press it instead of acting as TV keys.
 
 **Share links with previews.** **Share** in the top bar uses the phone's share sheet, or copies the link on desktop. For channels that have a share card, the link is `c/<slug>.html`: a tiny page with Open Graph tags (title, tagline and a 1200×630 card image from `og/`) that sends visitors straight to `index.html#<slug>`. Discord, iMessage, X, Facebook and others show the card. Channels without a card get a plain `index.html#slug` link.
 
 In the admin console, **Publish share cards** draws a card for every on-air channel and THE GRID in the browser (canvas, same fonts as the site). It commits `og/<slug>.jpg` and `c/<slug>.html` (skipping unchanged files) and records the list in `settings.cards`, then publishes the lineup. Run it after adding or renaming channels. If you move to a custom domain, fill in **Site address** so the cards carry the right URLs. The home page itself uses `og/default.jpg`.
+
+## Social: viewer counts and chat (phase 11)
+
+Viewer counts and chat need a tiny always-on server, because GitHub Pages only serves files. `worker/` is a Cloudflare Worker with one Durable Object (`Hub`), which runs on Cloudflare's free plan. The TV works fully without it; social features appear only once you set its address.
+
+**How it works.** Each TV opens one WebSocket to `<worker>/ws` and sends `{t:"join", room:<channel slug>}` whenever it tunes, so the room is the channel.
+
+- **Viewer counts.** The hub tags each socket with its room and broadcasts `{t:"counts"}` (watchers per channel) about a second after anyone joins, leaves or switches. The top bar shows "◉ N WATCHING · M ONLINE", and the guide shows a count per channel.
+- **Chat.** `C` or the Chat button opens a panel for the current channel. Messages are plain text (up to 200 characters, handle up to 20) with control and invisible characters removed. Rate limit: one message per 1.2 s and 8 per 20 s per connection. The last 50 messages per channel are stored and sent to newcomers.
+- **Connection.** The hub uses Cloudflare's WebSocket hibernation, so idle rooms cost nothing. The client pings every 25 s and reconnects with backoff (1 s up to 30 s).
+- **Origin check.** Only pages served from origins in `ALLOWED_ORIGINS` (in `wrangler.toml`, default `https://ianmcgo.github.io`) can connect. Add your custom domain there if you move.
+
+**Deploying (about 5 minutes):**
+
+1. Make a free Cloudflare account.
+2. In a terminal: `cd worker && npm install && npx wrangler login && npx wrangler deploy`.
+3. Wrangler prints an address like `https://cybercable-social.<you>.workers.dev`.
+4. In the admin console's Station panel, paste that into **Social server**, keep **Chat** ticked (untick for counts only), and Publish.
+
+Open TVs pick up the change within about 5 minutes, without a refresh.
+
+Local test: `npx wrangler dev --var ALLOWED_ORIGINS:http://localhost:8000` and set the social server to `http://localhost:8787` in a draft preview.
+
+There is no moderation dashboard. If chat gets abused, untick Chat (counts keep working). To clear a channel's history, delete its `h:<slug>` key or redeploy with a new Durable Object name.
 
 ## Updates and the refresh popup (phase 7b)
 
