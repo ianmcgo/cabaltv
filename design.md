@@ -106,7 +106,7 @@ Anyone can open `#admin`, but without a token that can write to your repo they c
     }
   ],
   "settings": {
-    "tz": "Pacific/Guam",
+    "tz": "America/Los_Angeles",
     "guide": {"enabled": true, "number": 99, "name": "THE GRID"},
     "cards": ["avgn", "cards", "retro", "grid"],
     "social": {"url": "", "chat": true}
@@ -130,7 +130,7 @@ Each video is `[youtubeId, title, durationSeconds]`. Data load order on the TV: 
 **Promo breaks.** Each channel has a separate **Promo clips** list (choose it under *Editing*). With "Promo break every N programs" above 0, one clip plays after every N programs, cycling through the list. The pattern is fixed, so every loop is the same length and every viewer still lines up. Promos are labelled PROMO BREAK, and the guides skip them.
 
 **Time blocks.** A block is a named lineup that takes over a channel at set times each week, for example "Saturday Morning", Sat 08:00–12:00.
-- Times are **station time**: the time zone in the Station panel. It starts as `Pacific/Guam`; change it there. Every viewer uses station time, so they stay in sync wherever they are.
+- Times are **station time**: the time zone in the Station panel. It starts as `America/Los_Angeles` (US Pacific, with daylight saving handled automatically); change it there. Every viewer uses station time, so they stay in sync wherever they are.
 - During a block the channel plays the block's lineup from the top (optionally shuffled per airing). A main-loop program still running when a block starts is cut off at the start, like real TV.
 - The main loop keeps counting underneath. When the block ends, the channel joins the main program already in progress.
 - An end time earlier than the start runs past midnight (23:00–02:00).
