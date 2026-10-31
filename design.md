@@ -157,6 +157,7 @@ Internally, `locate()` checks block instances for the current and previous stati
 | Guide (or G) | Open the guide. Up/Down moves the yellow highlight, OK tunes, Back closes. |
 | Back (Esc, Backspace, webOS 461, Tizen 10009) | Close the guide, or leave TV mode |
 | Number keys | Jump to a channel |
+| S (or a remote's Subtitle key) | Captions on or off |
 | C | Open or close chat (when the social server is set) |
 
 All buttons have a visible yellow focus ring for Tab or D-pad focus navigation. When a button has focus, Enter and Space press it instead of acting as TV keys.
@@ -188,6 +189,10 @@ Open TVs pick up the change within about 5 minutes, without a refresh.
 Local test: `npx wrangler dev --var ALLOWED_ORIGINS:http://localhost:8000` and set the social server to `http://localhost:8787` in a draft preview.
 
 There is no moderation dashboard. If chat gets abused, untick Chat (counts keep working). To clear a channel's history, delete its `h:<slug>` key or redeploy with a new Durable Object name.
+
+## Captions (build 8)
+
+Captions start **off** (`cc_load_policy: 0`). The **CC** button, `S`, or a remote's Subtitle key switches them on or off, and the choice is saved in the viewer's browser. Switching uses the IFrame player's `captions` module: on loads the module and picks a track in the browser's language, then English, then whatever exists; off unloads it. YouTube can reset captions when a new video loads, so the setting is re-applied each time a program starts. Videos without captions just show none. The `captions` module calls are an undocumented part of the IFrame API; if YouTube changes them, the button stops working but nothing else breaks.
 
 ## Updates and the refresh popup (phase 7b)
 

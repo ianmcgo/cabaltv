@@ -232,6 +232,7 @@ body.tvmode.idle{cursor:none}
 #chatForm input:focus{border-color:var(--cyan)}
 #chatName{max-width:9em}
 .gch .vw{margin-left:auto;color:var(--mag);font-size:.75rem}
+#ccBtn.on{color:#05010d;background:var(--cyan);box-shadow:0 0 14px rgba(0,240,255,.6)}
 #probeBox{position:fixed;right:0;bottom:0;width:200px;height:113px;opacity:.01;pointer-events:none;z-index:-1}
 @media (max-width:820px){.adm-grid{grid-template-columns:1fr}.vrow{grid-template-columns:2.2em 1fr auto auto}.vrow img{display:none}.vol{margin-left:0}.controls .sep{display:none}.keys{display:none}}
 @media (max-width:520px){#osd{left:14px;top:12px}#osd .tag,#osd .prog,#bug{display:none}.btn{padding:.5em .65em;font-size:.75rem}.nowbar{grid-template-columns:1fr}#livePill{justify-self:start}}
@@ -301,11 +302,12 @@ body.tvmode.idle{cursor:none}
 <div class="vol">
 <button class="btn" id="muteBtn" title="Mute (M)">&#128266;</button>
 <input type="range" id="volume" min="0" max="100" value="80" aria-label="Volume">
+<button class="btn" id="ccBtn" title="Captions on/off (S)" aria-pressed="false">CC</button>
 <button class="btn" id="fsBtn" title="Fullscreen (F)">&#9974;</button>
 <button class="btn mag" id="tvBtn" title="TV mode (T)">&#9635; TV mode</button>
 </div>
 </div>
-<div class="keys"><kbd>&uarr;</kbd><kbd>&darr;</kbd> channel &nbsp; <kbd>0-9</kbd> jump &nbsp; <kbd>Space</kbd> pause &nbsp; <kbd>&larr;</kbd><kbd>&rarr;</kbd> &plusmn;1 min &nbsp; <kbd>R</kbd> restart &nbsp; <kbd>L</kbd> live &nbsp; <kbd>G</kbd> guide &nbsp; <kbd>M</kbd> mute &nbsp; <kbd>F</kbd> fullscreen &nbsp; <kbd>T</kbd> TV mode &nbsp; <kbd>Enter</kbd> info &nbsp; <kbd>C</kbd> chat</div>
+<div class="keys"><kbd>&uarr;</kbd><kbd>&darr;</kbd> channel &nbsp; <kbd>0-9</kbd> jump &nbsp; <kbd>Space</kbd> pause &nbsp; <kbd>&larr;</kbd><kbd>&rarr;</kbd> &plusmn;1 min &nbsp; <kbd>R</kbd> restart &nbsp; <kbd>L</kbd> live &nbsp; <kbd>G</kbd> guide &nbsp; <kbd>M</kbd> mute &nbsp; <kbd>F</kbd> fullscreen &nbsp; <kbd>T</kbd> TV mode &nbsp; <kbd>Enter</kbd> info &nbsp; <kbd>C</kbd> chat &nbsp; <kbd>S</kbd> captions</div>
 
 <footer>
 <span>Created by Ian McGonigal</span>
@@ -403,7 +405,7 @@ const clockOf=ms=>new Date(ms).toLocaleTimeString([],{hour:'numeric',minute:'2-d
 const uid=()=>'ch-'+Math.random().toString(36).slice(2,9);
 const slugify=s=>String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'channel';
 const ORIGIN=location.protocol.startsWith('http')?location.origin:undefined;
-const BUILD=7;
+const BUILD=8;
 const VER={dataRev:null,snoozeUntil:0,lastCheck:0,offered:0};
 
 const normVids=L=>(L||[]).filter(v=>Array.isArray(v)&&v[0]&&+v[2]>0).map(v=>[String(v[0]),String(v[1]||v[0]),Math.round(+v[2])]);
@@ -593,13 +595,13 @@ GR.music={stop(){alive=false;clearTimeout(timer);out.gain.setTargetAtTime(0,audi
 function toggleGuide(open){const g=$('#guide');const o=open==null?!g.classList.contains('open'):open;g.classList.toggle('open',o);if(o){renderGuide(true);if(typeof toggleChat==='function')toggleChat(false)}}
 
 function onState(e){
-if(e.data===1){V.paused=false;staticOff();$('#paused').classList.add('hidden')}
+if(e.data===1){V.paused=false;staticOff();$('#paused').classList.add('hidden');if(V.ccFor!==V.loadedAt){V.ccFor=V.loadedAt;applyCaptions()}}
 else if(e.data===2){V.paused=true}
 else if(e.data===0){advance()}
 renderNow();
 }
 function makePlayer(){
-V.player=new YT.Player('yt',{width:'100%',height:'100%',playerVars:{autoplay:1,controls:0,disablekb:1,fs:0,rel:0,modestbranding:1,iv_load_policy:3,playsinline:1,origin:ORIGIN},events:{onReady:()=>{V.ready=true;V.player.setVolume(+$('#volume').value);if(V.powered&&V.loc)playAt({...V.loc,off:V.live?locate(cur(),liveAbs(cur())).off:V.loc.off})},onStateChange:onState,onError:e=>lostSignal(e.data)}});
+V.player=new YT.Player('yt',{width:'100%',height:'100%',playerVars:{autoplay:1,controls:0,disablekb:1,fs:0,rel:0,modestbranding:1,iv_load_policy:3,playsinline:1,cc_load_policy:0,origin:ORIGIN},events:{onReady:()=>{V.ready=true;V.player.setVolume(+$('#volume').value);if(V.powered&&V.loc)playAt({...V.loc,off:V.live?locate(cur(),liveAbs(cur())).off:V.loc.off})},onStateChange:onState,onError:e=>lostSignal(e.data)}});
 }
 window.onYouTubeIframeAPIReady=()=>{makePlayer();if(A.wantProbe)A.wantProbe()};
 
@@ -643,6 +645,7 @@ else if(k==='l'||k==='L'||k==='MediaTrackNext')goLive(false);
 else if(k==='g'||k==='G'||k==='Guide'){V.gsel=null;toggleGuide();if($('#guide').classList.contains('open'))guideMove(0)}
 else if(k==='m'||k==='M'||k==='AudioVolumeMute')toggleMute();
 else if(k==='f'||k==='F')toggleFs();
+else if(k==='s'||k==='S'||k==='Subtitle'){e.preventDefault();toggleCaptions()}
 else if(k==='t'||k==='T')setTvMode(!document.body.classList.contains('tvmode'));
 else if((k==='c'||k==='C')&&SO.on&&SO.chat){e.preventDefault();toggleChat()}
 else if(back){if(document.body.classList.contains('tvmode')){e.preventDefault();setTvMode(false)}}
@@ -1000,6 +1003,14 @@ $('#chatBtn').onclick=()=>toggleChat();$('#chatClose').onclick=()=>toggleChat(fa
 $('#chatForm').addEventListener('submit',e=>{e.preventDefault();const name=$('#chatName').value.trim(),text=$('#chatText').value.trim();if(!name){$('#chatName').focus();toast('// PICK A HANDLE FIRST');return}if(!text)return;
 if(!SO.ws||SO.ws.readyState!==1){toast('// CHAT OFFLINE \u2014 RECONNECTING');return}LS.set('cybercable.handle',name);SO.ws.send(JSON.stringify({t:'chat',name,text}));$('#chatText').value=''});
 $('#chatForm').addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();toggleChat(false)}});
+V.cc=!!LS.get('cybercable.cc',false);
+function applyCaptions(){if(!V.ready)return;const P=V.player;
+try{if(!V.cc){P.unloadModule('captions');P.unloadModule('cc');return}
+P.loadModule('captions');P.loadModule('cc');
+setTimeout(()=>{try{const L=P.getOption('captions','tracklist')||P.getOption('cc','tracklist')||[];if(!L.length)return;const want=(navigator.language||'en').slice(0,2).toLowerCase();const t=L.find(x=>(x.languageCode||'').toLowerCase().startsWith(want))||L.find(x=>(x.languageCode||'').startsWith('en'))||L[0];P.setOption('captions','track',t)}catch(e){}},700)}catch(e){}}
+function renderCcBtn(){const b=$('#ccBtn');b.classList.toggle('on',V.cc);b.setAttribute('aria-pressed',String(V.cc))}
+function toggleCaptions(){V.cc=!V.cc;LS.set('cybercable.cc',V.cc);renderCcBtn();applyCaptions();toast(V.cc?'// CAPTIONS ON':'// CAPTIONS OFF')}
+$('#ccBtn').onclick=toggleCaptions;renderCcBtn();
 let lastRoute='';
 async function route(){
 const h=decodeURIComponent(location.hash.slice(1));
