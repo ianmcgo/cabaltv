@@ -92,9 +92,16 @@ Anyone can open `#admin`, but without a token that can write to your repo they c
       "epoch": "2026-10-31T00:00:00Z",
       "shuffle": false,
       "hidden": false,
-      "videos": [["YaXnmR68Zpc", "Maniac Mansion (NES)", 1048]]
+      "idents": true,
+      "breakEvery": 0,
+      "videos": [["YaXnmR68Zpc", "Maniac Mansion (NES)", 1048]],
+      "bumpers": [],
+      "blocks": [
+        {"id": "b1", "name": "Saturday Morning", "days": [6], "start": "08:00", "end": "12:00", "shuffle": false, "videos": []}
+      ]
     }
-  ]
+  ],
+  "settings": {"tz": "Pacific/Guam", "guide": {"enabled": true, "number": 99, "name": "THE GRID"}}
 }
 ```
 
@@ -104,6 +111,25 @@ Each video is `[youtubeId, title, durationSeconds]`. Data load order on the TV: 
 
 - **Whole YouTube channels.** In Add programs, paste a `/channel/UC...` link or a bare channel ID. It is turned into that channel's uploads playlist (`UU...`). An `@handle` can't be resolved from the browser, so the console asks for the channel ID instead (Share, then Copy channel ID). The IFrame API lists at most about 200 videos of a playlist; add older ones by link.
 - **Re-check all.** Test-loads every video in the lineup and updates titles and lengths that changed. It lists videos that are now removed, private or blocked from embedding, with a **Remove dead** button. **Stop** cancels part-way. It takes 1–3 s per video, so a 235-video channel needs a few minutes. Timeouts are not counted as dead, since they are usually network hiccups.
+
+## Real-cable features (phase 9)
+
+**Station IDs.** When a new program starts on its own (not when you tune in partway), a three-second ident plays over its first moments: the channel number and name in neon, with a short chime from the browser's audio engine. It doesn't move the schedule. Turn it off per channel with "Station ID between programs".
+
+**Up next.** About 20 seconds before a program ends (for programs over 2 minutes), an "UP NEXT" banner slides in at the lower left with the next program's title.
+
+**Promo breaks.** Each channel has a separate **Promo clips** list (choose it under *Editing*). With "Promo break every N programs" above 0, one clip plays after every N programs, cycling through the list. The pattern is fixed, so every loop is the same length and every viewer still lines up. Promos are labelled PROMO BREAK, and the guides skip them.
+
+**Time blocks.** A block is a named lineup that takes over a channel at set times each week, for example "Saturday Morning", Sat 08:00–12:00.
+- Times are **station time**: the time zone in the Station panel. It starts as `Pacific/Guam`; change it there. Every viewer uses station time, so they stay in sync wherever they are.
+- During a block the channel plays the block's lineup from the top (optionally shuffled per airing). A main-loop program still running when a block starts is cut off at the start, like real TV.
+- The main loop keeps counting underneath. When the block ends, the channel joins the main program already in progress.
+- An end time earlier than the start runs past midnight (23:00–02:00).
+- The admin page shows a weekly heat map of a channel's blocks.
+
+Internally, `locate()` checks block instances for the current and previous station day, using `Intl.DateTimeFormat` to turn station-time clock times into UTC, so changes to and from daylight saving time are handled. Otherwise it falls back to the main loop and trims the current item to the next block start. Programs trimmed short end on the schedule, not when YouTube's video ends.
+
+**THE GRID (program guide channel).** A built-in channel (number 99 by default; set the name, number or off switch in the Station panel). It shows a full-screen 90-minute guide, starting at the current half hour, for every channel. The current programs are highlighted and a yellow line marks the time. A spotlight box rotates through what's on now with a thumbnail every 7 seconds, and the list scrolls when there are more channels than fit. A quiet synth pad and arpeggio, generated in the browser, plays on this channel.
 
 ## Updates and the refresh popup (phase 7b)
 
