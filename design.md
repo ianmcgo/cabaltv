@@ -6,7 +6,7 @@ A cable-TV style site in one `index.html`. Each channel is a looping lineup of Y
 
 | File | Purpose |
 | --- | --- |
-| `index.html` | The whole app: viewer, guide, admin console. The sample channel (NERD//NET, 235 AVGN episodes, about 62 hours per loop) is embedded as a fallback. |
+| `index.html` | The whole app: viewer, guide, admin console. Three starter channels are embedded as a fallback: NERD//NET (CH 01, 235 AVGN episodes, about 62 h), Cabal Coffers TV (CH 02, the Cabal Coffers Trading Cards and Video Game & Toys playlists alternated, 113 videos, about 34 h) and Cartoon Theme Songs (CH 03, 149 intros from the "Catchiest Cartoon Theme Songs" playlist, about 3 h, with station IDs off because each program is about a minute). A channel's `aliases` list keeps old links working: `#cards` and `#retro` tune to Cabal Coffers TV, and `c/cards.html` and `c/retro.html` redirect there. |
 | `version.json` | Latest app build and lineup revision (see the updates section). |
 | `manifest.webmanifest`, `icons/` | Install-as-app metadata and icons. |
 | `og/*.jpg`, `c/*.html` | Share preview images and the small per-channel share pages that point to them. |
