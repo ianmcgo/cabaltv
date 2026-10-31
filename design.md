@@ -224,4 +224,4 @@ The style is cyberpunk: Orbitron for display text and Share Tech Mono for everyt
 
 The site is branded Cabal Coffers TV everywhere: browser tab, on-screen logo, share text, share pages and cards, home-screen app name and the social hub. It was called CYBER//CABLE before build 30.
 
-CH 07 Internet Cartoons (slug `internet`): 158 MeatCanyon cartoons from the "meatcanyon Animation videos in order" playlist, about 9.6 h, played in release order. The Day Drinkin promo and the Monster Lab Kickstarter announcement are left out.
+CH 07 Internet Cartoons (slug `internet`): 158 MeatCanyon cartoons from the "meatcanyon Animation videos in order" playlist, about 9.6 h, played in release order. The Day Drinkin promo and the Monster Lab Kickstarter announcement are left out. The 25 G.I. Joe PSA parodies (the 2007 Fensler Films redubs, from a fan playlist) are spread evenly between the MeatCanyon cartoons, in order, never two in a row; 183 videos, about 9.9 h in all.
