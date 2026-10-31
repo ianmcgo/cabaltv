@@ -100,6 +100,21 @@ Anyone can open `#admin`, but without a token that can write to your repo they c
 
 Each video is `[youtubeId, title, durationSeconds]`. Data load order on the TV: draft (only when preview is on, in the admin's own browser), then `channels.json`, then the embedded sample.
 
+## Updates and the refresh popup (phase 7b)
+
+| File | Field | Meaning |
+| --- | --- | --- |
+| `index.html` | `BUILD` constant | The app build this page is running. Also shown in the footer. |
+| `version.json` | `app` | The newest build on GitHub. |
+| `version.json` | `data` | Revision stamp for the channel lineup. |
+
+- Every 5 minutes, and whenever the tab becomes visible again after more than a minute away, the page fetches `version.json` with caching bypassed.
+- **New app build** (`app` > `BUILD`): a SYSTEM UPDATE card appears in the corner. **Reboot now** reloads with `?v=<build>` to skip stale caches and returns to the same channel. **Later** hides the card for 30 minutes.
+- **New lineup** (`data` changed): the page reloads `channels.json` quietly, keeps you on the same channel, re-tunes only if the live program changed, and shows a "LINEUP UPDATED" toast. No refresh needed.
+- **Publish to GitHub** in the admin console writes `channels.json` and then `version.json` with a fresh `data` stamp. It never lowers `app`.
+
+**Releasing a new app version:** bump `BUILD` in `index.html` and `app` in `version.json` to the same number in the same commit. Open tabs on the older build see the popup within about 5 minutes of GitHub Pages updating.
+
 ## Look
 
 The style is cyberpunk: Orbitron for display text and Share Tech Mono for everything else, from Google Fonts. Cyan and magenta neon sit on near-black, with a scrolling perspective grid, scanlines, a vignette and glitch-split logo text. Each channel's color drives the HUD corner brackets and channel bug. Channel changes show canvas-generated static and play a WebAudio noise-and-blip sound. The layout collapses to stacked controls on phones.
