@@ -256,7 +256,7 @@ body.tvmode.idle{cursor:none}
 <span class="pill" id="clock">--:--:--</span>
 <button class="btn hidden" id="installBtn">&#11015; Install</button>
 <span class="pill hidden" id="viewers" title="People watching this channel / everyone online"></span>
-<button class="btn hidden" id="chatBtn">&#128172; Chat</button>
+
 <button class="btn" id="shareBtn">&#10148; Share</button>
 <button class="btn" id="guideBtn">&#9776; Guide</button>
 </div>
@@ -408,7 +408,7 @@ const chNum=c=>+c.number===0?'000':String(c.number).padStart(2,'0');
 const uid=()=>'ch-'+Math.random().toString(36).slice(2,9);
 const slugify=s=>String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'channel';
 const ORIGIN=location.protocol.startsWith('http')?location.origin:undefined;
-const BUILD=45;
+const BUILD=46;
 const VER={dataRev:null,snoozeUntil:0,lastCheck:0,offered:0};
 
 const normVids=L=>(L||[]).filter(v=>Array.isArray(v)&&v[0]&&+v[2]>0).map(v=>[String(v[0]),String(v[1]||v[0]),Math.round(+v[2])]);
@@ -1001,8 +1001,8 @@ catch(e){A.busy=false;status('Share cards failed: '+e.message,'err')}
 const SO={on:false,chat:false,ws:null,url:'',room:'',counts:{},retry:0,retryT:0,pingT:0,msgs:[],unread:0};
 function socialCfg(){const so=V.data&&V.data.settings&&V.data.settings.social;return so&&so.url?{url:so.url.replace(/^http/,'ws')+'/ws',chat:so.chat}:null}
 function socialStart(){const cfg=socialCfg();
-if(!cfg){if(SO.ws){try{SO.ws.close()}catch(e){}}SO.on=false;SO.url='';$('#viewers').classList.add('hidden');$('#chatBtn').classList.add('hidden');toggleChat(false);return}
-SO.on=true;SO.chat=cfg.chat;$('#chatBtn').classList.toggle('hidden',!SO.chat);if(!SO.chat)toggleChat(false);
+if(!cfg){if(SO.ws){try{SO.ws.close()}catch(e){}}SO.on=false;SO.url='';$('#viewers').classList.add('hidden');toggleChat(false);return}
+SO.on=true;SO.chat=false;toggleChat(false);
 if(SO.ws&&SO.url===cfg.url)return;if(SO.ws){try{SO.ws.onclose=null;SO.ws.close()}catch(e){}}SO.url=cfg.url;socialOpen()}
 function socialOpen(){clearTimeout(SO.retryT);let ws;try{ws=new WebSocket(SO.url)}catch(e){return socialRetry()}SO.ws=ws;
 ws.onopen=()=>{SO.retry=0;socialJoin();clearInterval(SO.pingT);SO.pingT=setInterval(()=>{if(ws.readyState===1)ws.send('{"t":"ping"}')},25000)};
@@ -1015,14 +1015,14 @@ ws.onclose=()=>{clearInterval(SO.pingT);if(SO.ws===ws){SO.ws=null;$('#viewers').
 function socialRetry(){if(!SO.on)return;clearTimeout(SO.retryT);SO.retryT=setTimeout(socialOpen,Math.min(30000,1000*2**SO.retry++))}
 function socialJoin(){const c=cur();const room=c?c.slug:'';if(room!==SO.room){SO.room=room;SO.msgs=[];SO.unread=0;renderChat();renderChatBtn()}renderViewers();if(SO.ws&&SO.ws.readyState===1&&room)SO.ws.send(JSON.stringify({t:'join',room}))}
 function renderViewers(){const el=$('#viewers');if(!SO.on||!SO.ws||SO.ws.readyState!==1){el.classList.add('hidden');return}const here=SO.counts[SO.room]||0,all=Object.values(SO.counts).reduce((a,b)=>a+b,0);el.textContent='\u25C9 '+here+' WATCHING'+(all>here?' \u00b7 '+all+' ONLINE':'');el.classList.remove('hidden')}
-function renderChatBtn(){$('#chatBtn').innerHTML='&#128172; Chat'+(SO.unread?' <b style="color:var(--yel)">'+Math.min(SO.unread,99)+'</b>':'')}
+function renderChatBtn(){}
 const nameCol=n=>'hsl('+(hashStr(n)%360)+' 95% 65%)';
 function renderChat(){const c=cur();$('#chatRoom').textContent=c?'CH '+chNum(c)+' '+c.name:'';const log=$('#chatLog');const near=log.scrollHeight-log.scrollTop-log.clientHeight<60;
 log.innerHTML=SO.msgs.length?SO.msgs.map(m=>`<div class="m"><time>${new Date(m.ts).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}</time><b style="color:${nameCol(m.name)}">${esc(m.name)}</b>${esc(m.text)}</div>`).join(''):'<div class="sys">No messages on this channel yet. Say hi.</div>';
 if(near)log.scrollTop=log.scrollHeight}
 function toggleChat(open){const el=$('#chat');const o=open==null?!el.classList.contains('open'):open;if(o&&!(SO.on&&SO.chat))return;el.classList.toggle('open',o);if(!o&&document.activeElement&&el.contains(document.activeElement))document.activeElement.blur();if(o){toggleGuide(false);SO.unread=0;renderChatBtn();renderChat();const log=$('#chatLog');log.scrollTop=log.scrollHeight;setTimeout(()=>($('#chatName').value?$('#chatText'):$('#chatName')).focus(),250)}}
 $('#chatName').value=LS.get('cybercable.handle','');
-$('#chatBtn').onclick=()=>toggleChat();$('#chatClose').onclick=()=>toggleChat(false);
+$('#chatClose').onclick=()=>toggleChat(false);
 $('#chatForm').addEventListener('submit',e=>{e.preventDefault();const name=$('#chatName').value.trim(),text=$('#chatText').value.trim();if(!name){$('#chatName').focus();toast('// PICK A HANDLE FIRST');return}if(!text)return;
 if(!SO.ws||SO.ws.readyState!==1){toast('// CHAT OFFLINE \u2014 RECONNECTING');return}LS.set('cybercable.handle',name);SO.ws.send(JSON.stringify({t:'chat',name,text}));$('#chatText').value=''});
 $('#chatForm').addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();toggleChat(false)}});
